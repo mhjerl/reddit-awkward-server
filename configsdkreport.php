@@ -5,7 +5,7 @@ class redditConfig{
     static $ENDPOINT_OAUTH = 'https://oauth.reddit.com';
     static $ENDPOINT_OAUTH_AUTHORIZE = 'https://www.reddit.com/api/v1/authorize';
     static $ENDPOINT_OAUTH_TOKEN = 'https://www.reddit.com/api/v1/access_token';
-    static $ENDPOINT_OAUTH_REDIRECT = 'http://redditawkward.com/p/report_rule_violation.php';
+    static $ENDPOINT_OAUTH_REDIRECT = 'http://redditawkward.com/report_rule_violation.php';
     
     //access token configuration from https://ssl.reddit.com/prefs/apps
     static $CLIENT_ID = '***';

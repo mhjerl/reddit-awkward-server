@@ -1,5 +1,6 @@
 <?php
 
+
 $host="redditawkward.com.mysql"; // Host name
 $username="redditawkward_com"; // mysql username
 $password="***"; // mysql password

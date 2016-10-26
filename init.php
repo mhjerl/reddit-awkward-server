@@ -618,6 +618,12 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 	$grandParentRedditorName = $grandParentCommentWithAllInfoInHere->author;
 	$friendRelationStrength = null;
 	$friend = null;
+
+	// Enforce general rule §5: Redditors can't direct any tags, besides reddit.awkward{no.i.mean.it} towards their own comments.
+	if ($mintCommentThatIsNotFromDBButFromTheNet->author === $redditor) {
+		break;
+	}
+
 	for ($c = 0; $c < sizeof($friends); $c++) {
 		if ($friends[$c]['friend'] == $parentRedditorName) {
 			$friend = $friends[$c];
@@ -886,10 +892,6 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 	$tagsAtYourDisposal[$c] = new stdClass();
 	$tagsAtYourDisposal[$c]->cid = $id;
 	$tagsAtYourDisposal[$c]->tag = "reddit.awkward{waits.for.your.reply.only}";
-	$c++;
-	$tagsAtYourDisposal[$c] = new stdClass();
-	$tagsAtYourDisposal[$c]->cid = $id;
-	$tagsAtYourDisposal[$c]->tag = "reddit.awkward{please.use.reddit.awkward.tags.from.here}";
 	$c++;
 	$tagsAtYourDisposal[$c] = new stdClass();
 	$tagsAtYourDisposal[$c]->cid = $id;

@@ -126,24 +126,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
         }
     }
 
-    // look for "reddit.awkward{explanation.why.i.was.angry}"
-    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
-        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{explanation.why.i.was.angry}") !== false) {
-            $redditorInAllThisMess = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            $parentCommentId = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaConditionally("reddit.awkward{youre.welcome}", $redditorInAllThisMess, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using the tag: reddit.awkward{youre.welcome}", 5);
-        }
-    }
-
-    // look for "reddit.awkward{explanation.why.i.was.angry}"
-    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
-        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{explanation.why.i.was.angry}") !== false) {
-            $redditorInAllThisMess = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            $parentCommentId = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaConditionally("reddit.awkward{youre.welcome}", $redditorInAllThisMess, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using the tag: reddit.awkward{youre.welcome}", 5);
-        }
-    }
-
+    
 
     // Enforce general rule §1: No more than one tag on the same level of the comment tree, i.e. as an answer to a given comment.
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
@@ -218,6 +201,49 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
             }
         }
     }
+
+		
+	// General rule §4 implemented below
+
+
+	// Enforce general rule §5: Redditors can't direct any tags, besides reddit.awkward{no.i.mean.it} towards their own comments.
+    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
+        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{") !== false) {
+			$redditor = $mintCommentThatIsNotFromDBButFromTheNet->author;
+			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+			if ($redditor === $wantedSecondPersonWithAlleFieldsInHere) {
+				// Here: Redditor is responding to himself
+				// Test if he's using the reddit.awkward{no.i.mean.it} tag
+				if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{no.i.mean.it")      ===       false) {
+					// Here: He is not using the reddit.awkward{no.i.mean.it} tag
+					// Therefore: Give penalty
+					subtractPKarmaConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $tag, $pageid, $id2, $subreddit, $pagename, "General Rule §5: §5 Nearly all Awkward tags are social in nature. Redditors can't direct any tags, besides reddit.awkward{no.i.mean.it}, towards their own comments.");
+				}
+			}
+        }
+    }
+
+
+	// look for reddit.awkward{thanks}, reddit.awkward{explanation.why.i.was.angry} and reddit.awkward{i.was.being.careless}
+    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
+        if ((strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{thanks}") !== false) || (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{explanation.why.i.was.angry}") !== false) || (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{i.was.being.careless}") !== false)) {
+			$commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;
+			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+			$parentCommentBody = $wantedSecondPersonWithAlleFieldsInHere->body;
+			if (strpos($parentCommentBody, 'reddit.awkward{no.problem}')         ===     false or strpos($parentCommentBody, 'reddit.awkward{dont.mind.its.ok.lets.move.on}')         ===             false or strpos($parentCommentBody, 'reddit.awkward{its.fine.i.consider.the.case.closed}')           ===          false)
+			{
+				// Here: Tag is not directed towards an overbearing act of kindness
+				// Therefore: Give penalty
+				// Strip text between {}
+                preg_match('#\{(.*?)\}#', $commentBody, $match);
+                $shortHandTag = $match[1];
+                $tag = "reddit.awkward{" . $shortHandTag . "}";
+				subtractPKarmaConditionally($redditorInAllThisMess, $tag, $pageid, $id2, $subreddit, $pagename, "You misused the tag " . $tag . ". It should be directed against 'an overbearing act' i.e. either towards reddit.awkward{no.problem}, reddit.awkward{dont.mind.its.ok.lets.move.on} or reddit.awkward{its.fine.i.consider.the.case.closed}.", -5);
+			}
+		}
+	}
+
+
 
     // look for "reddit.awkward{doorslam}"
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
@@ -538,72 +564,6 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     }
 
 
-    // look for "reddit.awkward{please.use.reddit.awkward.tags.from.here}"
-    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
-        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{please.use.reddit.awkward.tags.from.here}') !== false) {
-            /*if (roadBackToRootCointainsOneOrMoreOfThisTag("reddit.awkward{please.use.reddit.awkward.tags.from.here}", $id, $jsonObj, $mintArrayOfIdsToBodiesAndAuthorsAndParentIds)) {
-                echo "<br><br>found j-tag - which is not the first since root - in comment with id: $id ....returning";
-                return;
-            }
-            else {
-                echo "<br><br>found j-tag - which IS the first since root: $id ..... proceeding";
-            }*/
-
-            $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            givePKarmaForUseOfTagConditionally("reddit.awkward{please.use.reddit.awkward.tags.from.here}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
-
-            echo "<br><br>found j-tag in comment with id: $id";
-
-            $apples = giveMeTheNamesOfAllApplesOnTheBranchWithThisCommentAsAxePointHmmm($jsonObj, $id);
-            echo "<br><br>Sooo many apples: " . sizeof($apples);
-            foreach ($apples as $apple) {
-                echo "<br>apple id: $apple  author:" . $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$apple]->author;
-                if ($mintCommentThatIsNotFromDBButFromTheNet->author === $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$apple]->author) {
-                    // Here: j-tag-agent has illegally written on an apple in his own branch (Is he a monkey??)
-                    // Therefore: Check if he remembered the j-tag
-                    if (strpos($mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$apple]->body, 'reddit.awkward{please.use.reddit.awkward.tags.from.here}') !== false) {
-                        // Here: J-tag-agent remembered to use the j-tag again.
-                        // Therefore: Investigate if there's an unbroken chain of j-tag-s back to the original j-tag.
-                        if (isUnbrokenTagSequenceBackwards("reddit.awkward{please.use.reddit.awkward.tags.from.here}", $apple, $id, $jsonObj, $mintArrayOfIdsToBodiesAndAuthorsAndParentIds)) {
-                            givePKarmaForCorrectUseOfPleaseUseAKTagsFromHereTagConditionally($mTagAgentRedditorName, $pageid, $apple, $subreddit, $pagename);
-                        }
-                    } else {
-                        // Here: J-tag-agent forgot to use the j-tag.
-                        // Therefore: Give penalty to him!
-                        subtractPKarmaForTagJSelfDisciplineViolationConditionally($mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$apple]->author, $pageid, $apple, $subreddit, $pagename);
-                    }
-                } else {
-                    // Here: Apple owner is different from j-tag-agent
-                    // Therefore: Check if he remembered the j-tag
-                    $anotherDudeWhoMustUseTheJTag = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$apple]->author;
-                    if (strpos($mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$apple]->body, 'reddit.awkward{please.use.reddit.awkward.tags.from.here}') !== false) {
-                        // Here: J-tag-agent remembered to use the j-tag again.
-                        // Therefore: Investigate if there's an unbroken chain of j-tag-s back to the original j-tag.
-                        if (isUnbrokenTagSequenceBackwards("reddit.awkward{please.use.reddit.awkward.tags.from.here}", $apple, $id, $jsonObj, $mintArrayOfIdsToBodiesAndAuthorsAndParentIds)) {
-                            givePKarmaForCorrectUseOfPleaseUseAKTagsFromHereTagConditionally($anotherDudeWhoMustUseTheJTag, $pageid, $apple, $subreddit, $pagename);
-                        }
-                    } else {
-                        // Here: J-tag-agent forgot to use the j-tag.
-                        // Therefore: Give penalty to him!
-                        subtractPKarmaForTagJSelfDisciplineViolationConditionally($anotherDudeWhoMustUseTheJTag, $pageid, $apple, $subreddit, $pagename);
-                    }
-                }
-            }
-        }
-    }
-
-    /* DEPRECATED
-
-    // look for "reddit.awkward{filter.all.except.reply.from.you}"
-    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatIsNotFromDBButFromTheNet) {
-        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{filter.all.except.reply.from.you}') !== false) {
-
-            $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            givePKarmaForUseOfTagConditionally("reddit.awkward{filter.all.except.reply.from.you}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
-
-        }
-    }*/
-
 
     // look for "reddit.awkward{i.will.not.reply.and.expect.apology}"
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
@@ -643,19 +603,22 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     }
 
 
-    // look for "#reddit.awkward{no.problem}"
+    // look for reddit.awkward{no.problem}, reddit.awkward{dont.mind.its.ok.lets.move.on} or reddit.awkward{its.fine.i.consider.the.case.closed}
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
-        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, '#reddit.awkward{no.problem}') !== false) {
-
+        if ((strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{no.problem}') !== false) || (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{dont.mind.its.ok.lets.move.on}') !== false) || (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{its.fine.i.consider.the.case.closed}') !== false)) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            givePKarmaForUseOfTagConditionally("#reddit.awkward{no.problem}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
+            givePKarmaForUseOfTagConditionally("reddit.awkward{no.problem}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
 
             $idOfParentRedditor = $mintCommentThatIsNotFromDBButFromTheNet->parent_id;
             $apologizingRedditor = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$idOfParentRedditor]->author;
             $apologizingRedditorsCommentBody = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$idOfParentRedditor]->body;
-            if (strpos($apologizingRedditorsCommentBody, 'reddit.awkward{i.apologize}') !== false) {
-                givePKarmaForCorrectUseOfNoProblemosTagConditionally($mTagAgentRedditorName, $apologizingRedditor, $pageid, $id, $subreddit, $pagename);
+            if ((strpos($apologizingRedditorsCommentBody, 'reddit.awkward{i.apologize}') !== false) or (strpos($apologizingRedditorsCommentBody, 'reddit.awkward{guarded.apology}') !== false)) {
+				$motivation = "You have received $points for saying \"no problems\" to $apologizingRedditor by using the reddit.awkward{no.problem} tag.";
+				$points = 15;
+                givePKarmaForCorrectUseOfNoProblemosTagConditionally($mTagAgentRedditorName, $apologizingRedditor, $pageid, $id, $subreddit, $pagename, $motivation, $points);
             } else {
+				$points = -15;
+				$motivation = "You have received $points in penalty, because you didn't use directly towards someone who is apologizing.";
                 subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally($mTagAgentRedditorName, $apologizingRedditor, $pageid, $id, $subreddit, $pagename);
             }
 
@@ -759,33 +722,31 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
                 }
             }
         }
+	}
 
-        // check if redditors who are in conflict talk to each (on this particular page, known to the system) other without the wrongdoer having apologized first
-        foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
-            $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            if (needsToApologize($mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author)) {
-                // Here: first person needs to apologize to second person
-                // Therefore: Create notification for first person about this situation
-                createNeedToApologizeBeforeChattingNotificationForBothFirstAndSecondPerson($pageid, $id, $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $subreddit, $pagename);
-            } else if (needsToApologize($wantedSecondPersonWithAlleFieldsInHere->author, $mTagAgentRedditorName)) {
-                // Here: second person needs to apologize to first person
-                // Therefore: Create notification for second person about this situation
-                createNeedToApologizeBeforeChattingNotificationForBothFirstAndSecondPerson($pageid, $id, $wantedSecondPersonWithAlleFieldsInHere->author, $mTagAgentRedditorName, $subreddit, $pagename);
-            }
+    // check if redditors who are in conflict talk to each (on this particular page, known to the system) other without the wrongdoer having apologized first
+    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
+        $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
+        $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+        if (needsToApologize($mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author)) {
+            // Here: first person needs to apologize to second person
+            // Therefore: Create notification for first person about this situation
+            createNeedToApologizeBeforeChattingNotificationForBothFirstAndSecondPerson($pageid, $id, $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $subreddit, $pagename);
+        } else if (needsToApologize($wantedSecondPersonWithAlleFieldsInHere->author, $mTagAgentRedditorName)) {
+            // Here: second person needs to apologize to first person
+            // Therefore: Create notification for second person about this situation
+            createNeedToApologizeBeforeChattingNotificationForBothFirstAndSecondPerson($pageid, $id, $wantedSecondPersonWithAlleFieldsInHere->author, $mTagAgentRedditorName, $subreddit, $pagename);
         }
-
-        // look for "reddit.awkward{that.pissed.me.off.but.please.dont.mind}"
-        foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
-            if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{that.pissed.me.off.but.please.dont.mind}') !== false) {
-                $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-                $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-                givePKarmaForUseOfTagConditionally("reddit.awkward{that.pissed.me.off.but.please.dont.mind}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
-            }
-        }
-
     }
 
+    // look for "reddit.awkward{that.pissed.me.off.but.please.dont.mind}"
+    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
+        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{that.pissed.me.off.but.please.dont.mind}') !== false) {
+            $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
+            $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("reddit.awkward{that.pissed.me.off.but.please.dont.mind}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
+        }
+    }
 }
 
 
@@ -1136,7 +1097,7 @@ function subtractPKarmaForIDontThingTheOriginalBlaBlaBlaConditionally($redditor,
 }
 
 
-function givePKarmaForCorrectUseOfNoProblemosTagConditionally($redditorJTagAgent, $apologizingRedditor, $pid, $cid, $subreddit, $pagename) {
+function givePKarmaForCorrectUseOfNoProblemosTagConditionally($redditorJTagAgent, $apologizingRedditor, $pid, $cid, $subreddit, $pagename, $motivation, $points) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditorJTagAgent' AND pageid='$pid' AND commentid='$cid'";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
@@ -1144,20 +1105,18 @@ function givePKarmaForCorrectUseOfNoProblemosTagConditionally($redditorJTagAgent
 		echo "$redditorJTagAgent has already been given a penalty";
 	}
 	else {
-		$actualPoints = 15;
- 		echo "<br><br>Awarding $actualPoints to $redditorJTagAgent";
-		$motivation = "You have received $actualPoints for saying \"no problems\" to $apologizingRedditor by using the reddit.awkward{no.problem} tag.";
+ 		echo "<br><br>Awarding $points to $redditorJTagAgent";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditorJTagAgent', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'givePKarmaForCorrectUseOfNoProblemosTagConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditorJTagAgent', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'givePKarmaForCorrectUseOfNoProblemosTagConditionally', '$subreddit', '$pagename');";
 		//echo "<br><br>$sql";
 		queryDoorslamAndExpectConditionally($redditorJTagAgent, $apologizingRedditor, $subreddit, $pid, $pagename, "reddit.awkward{no.problem}", $cid, $sql);
 	}
 }
 
 
-function subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally($redditor, $nonApologizingRedditor, $pid, $cid, $subreddit, $pagename) {
+function subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally($redditor, $nonApologizingRedditor, $pid, $cid, $subreddit, $pagename, $motivation, $points) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
 	echo "<br>$query";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
@@ -1166,12 +1125,10 @@ function subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally($redditor, 
 		echo "<br>$redditor has already been given a penalty";
 	}
 	else {
-		$actualPoints = -10;
- 		echo "<br><br>Awarding $actualPoints to $redditor";
-		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har sagt OK ved at bruge #reddit.awkward{no.problem]-tagget uden at den du sagde det til ($nonApologizingRedditor) har sagt undskyld.";
+ 		echo "<br><br>Awarding $points to $redditor";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally', '$subreddit', '$pagename');";
 		echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}

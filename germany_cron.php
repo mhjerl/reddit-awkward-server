@@ -2,12 +2,11 @@
 header('Content-Type: text/html; charset=utf-8');
 while (@ob_end_flush());
 include('config.php');
-include('../tagoverview.php');
+require __DIR__ . "/../tagoverview.php";
 date_default_timezone_set('Europe/Copenhagen');
 $dt2=date("Y-m-d H:i:s");
 $somethingHappenedInStuttTown;
-//echo "Velkommen";
-
+////echo "Velkommen";
 
 $query = "SELECT * FROM prima_germany WHERE undersurveillance='true';";
 
@@ -17,7 +16,7 @@ while($row = mysqli_fetch_array($result)){
   $latestprimadonnaactivity = $row[0];
   $pageid = $row[3];
   $pageurl = $row[4];
-echo "<br>$pageurl<br>";
+//echo "<br>$pageurl<br>";
 
 	$latest = new DateTime($latestprimadonnaactivity);
 	$now = new DateTime($dt2);
@@ -25,17 +24,17 @@ echo "<br>$pageurl<br>";
 	$diff = $now->diff($latest);
 
 	$monthsGoneBy = (($diff->format('%y') * 12) + $diff->format('%m'));
-	echo "hej-1! " . $monthsGoneBy;
+	//echo "hej-1! " . $monthsGoneBy;
 	if ($monthsGoneBy > 0) {
 		$query2 = "UPDATE prima_germany SET undersurveillance='false' WHERE pageid='$pageid'";
 		mysqli_query($GLOBALS["___mysqli_ston"], $query2);
 	}
   	else {
-		putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($pageid, $pageurl, $subreddit);
+		putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($pageid, $pageurl, $subreddit, $tagCategories);
 	
 	}
-	//echo "hej0! ";
-	//echo (($diff->format('%y') * 12) + $diff->format('%m')) . " full months difference";
+	////echo "hej0! ";
+	////echo (($diff->format('%y') * 12) + $diff->format('%m')) . " full months difference";
 
 }
 
@@ -48,12 +47,12 @@ function stripTrailingSlash($url) {
 	return $url;
 }
 
-function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($pageid, $pageurl, $subreddit) {
+function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($pageid, $pageurl, $subreddit, $tagCategories) {
 	$uri_path = parse_url($pageurl, PHP_URL_PATH);
 	$uri_segments = explode('/', $uri_path);
 	$subreddit = $uri_segments[2];
 	$pagename = $uri_segments[4];
-	echo "subreddit: " . $subreddit . "<br>pagename: " . $pagename . "<br>";
+	//echo "subreddit: " . $subreddit . "<br>pagename: " . $pagename . "<br>";
 	$ch = curl_init(stripTrailingSlash($pageurl) . ".json");
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
@@ -61,7 +60,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 	curl_close($ch);
 	$jsonObj = json_decode($content, false);
 	$mainPostId = $jsonObj[0]->data->children[0]->data->id;
-	echo "mainPostId: " . $mainPostId;
+	//echo "mainPostId: " . $mainPostId;
 
     //1. look for new and altered comment texts
 
@@ -69,7 +68,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 
     $query = "SELECT * FROM prima_stuttgart WHERE pageid='$pageid'";
     $result = mysqli_query($GLOBALS["___mysqli_ston"], $query);
-    echo "hej1! ";
+    //echo "hej1! ";
     $previousStoredWayBackIdToCommentBodyArray = Array();
     while ($row = mysqli_fetch_array($result)) {
         //$pageidAnother = $row[0];
@@ -79,10 +78,10 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     }
     // ... Done! 1.b.
     $mintArrayOfIdsToBodiesAndAuthorsAndParentIds = traverseG($jsonObj);
-    echo "length: " . sizeof($mintArrayOfIdsToBodiesAndAuthorsAndParentIds);
+    //echo "length: " . sizeof($mintArrayOfIdsToBodiesAndAuthorsAndParentIds);
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
-        //echo "id: " . $id . "<br><br>";
-        //echo "$mintCommentThatIsNotFromDBButFromTheNet: " . $mintCommentThatIsNotFromDBButFromTheNet . "<br><br>";
+        ////echo "id: " . $id . "<br><br>";
+        ////echo "$mintCommentThatIsNotFromDBButFromTheNet: " . $mintCommentThatIsNotFromDBButFromTheNet . "<br><br>";
 
 
         if (!array_key_exists($id, $previousStoredWayBackIdToCommentBodyArray)) {
@@ -112,15 +111,15 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
             if ($oldHackyBodyHehehe !== $bodyMint) {
                 // Here: (The comment loaded directly from the net IS known in the db) & (Its body was altered since last check from Germany)
                 // Therefore: Update body
-                echo "Inspecting this live body (hehe): " . $bodyMint . " old body " . $oldHackyBodyHehehe . "<br><br>";
-                echo "It changed. <br><br>";
+                //echo "Inspecting this live body (hehe): " . $bodyMint . " old body " . $oldHackyBodyHehehe . "<br><br>";
+                //echo "It changed. <br><br>";
                 $query = "UPDATE prima_stuttgart SET commentbody='$bodyMint' WHERE pageid='$pageid' AND commentid='$id';";
                 mysqli_query($GLOBALS["___mysqli_ston"], $query);
                 $somethingHappenedInStuttTown = true;  // Odd! Something happened in Stuttgart, someone changed their comment.
             } else {
                 // Here: (The comment loaded directly from the net IS known in the db) & (It was altered since last check from Germany)
                 // Therefore: Update body
-                //echo "It didn't change.<br><br>";
+                ////echo "It didn't change.<br><br>";
                 $somethingHappenedInStuttTown = false;  // Nothing ever happens in Stuttgart! -Nor in Düsseldorf!
             }
         }
@@ -161,19 +160,47 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
         }
     }
 
-    // Enforce general rule §2: No self-made tags.
+    // Enforce general rule §2: No self-made tags. - and: insert into prima_tag_use
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{") !== false) {
             $commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;
             // Strip text between {}
             preg_match('#\{(.*?)\}#', $commentBody, $match);
             $shortHandTag = $match[1];
+			$tag = "reddit.awkward{" . $shortHandTag . "}";
             if (!array_key_exists($shortHandTag, $tagCategories)) {
                 // Here: Unknown tag
                 // Therefore: Give penalty
-                $tag = "reddit.awkward{" . $shortHandTag . "}";
                 subtractPKarmaConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $tag, $pageid, $id2, $subreddit, $pagename, "You used a self-made tg.", -100);
             }
+			else {
+				// Here: Known tag
+				// Therefore: Insert it into the very big table prima_tag_use
+				$sql = "SELECT * FROM prima_tag_use WHERE pageid='$pageid' AND commentid='$id'";
+				$result = mysqli_query($GLOBALS["___mysqli_ston"], $sql);
+				$count = mysqli_num_rows($result);
+				echo "hej";
+				if ($count == 0) {
+					echo "dav";
+					$redditor = $mintCommentThatIsNotFromDBButFromTheNet->author;
+					$dt2=date("Y-m-d H:i:s");
+					$t = time();
+$sql = "INSERT INTO  `redditawkward_com`.`prima_tag_use` (
+`redditor` ,
+`pageid` ,
+`commentid` ,
+`subreddit` ,
+`when_detected_utc` ,
+`when_detected` ,
+`tag`
+)
+VALUES (
+'$redditor',  '$pageid',  '$id',  '$subreddit',  '$t',  '$dt2',  '$tag'
+);";
+					echo $sql;
+					mysqli_query($GLOBALS["___mysqli_ston"], $sql);
+				}
+			}
         }
     }
 
@@ -316,13 +343,13 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
                 $motivation = "You have received a penalty of -5 for using reddit.awkward{awkward} against another Reddit Awkward tag.";
                 subtractPKarmaForPlainAwkwardTagViolationConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $pageid, $id, $subreddit, $pagename, $motivation, -5);
             } else {
-                if (!hasMoreWordsBesidesTheTagItselfDude(allCommentsWithAllEntries[i]['body'], "reddit.awkward{awkward}")) {
+                if (!hasMoreWordsBesidesTheTagItselfDude($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{awkward}")) {
                     // Here: tag is stand-alone the way it sholdn't be
                     // Therefore: Give penalty!
                     $motivation = "You have received a penalty of -5 for using reddit.awkward{awkward} against another Reddit Awkward tag.";
                     subtractPKarmaForPlainAwkwardTagViolationConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $pageid, $id, $subreddit, $pagename, $motivation, -5);
                 } else {
-                    if (getWordCountBesidesTheTagItselfDude(allCommentsWithAllEntries[i]->body, "reddit.awkward{awkward}") < 20) {
+                    if (getWordCountBesidesTheTagItselfDude($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{awkward}") < 20) {
                         // Here: Less than 20 words
                         $motivation = "reddit.awkward{awkward} tag violation: §3 Must be precluded by a text with no less than 20 words.";
                         subtractPKarmaForPlainAwkwardTagViolationConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $pageid, $id, $subreddit, $pagename, $motivation, -5);
@@ -345,11 +372,11 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
             givePKarmaForUseOfTagConditionally("reddit.awkward{waits.for.anyone}", $cursoryRedditorWaiting, $pageid, $id, $subreddit, $pagename);
 
             // Here: $mintCommentThatIsNotFromDBButFromTheNet->body has reddit.awkward{waits.for.anyone] tag
-            echo "Found comment with reddit.awkward{waits.for.anyone]: " . $id . "<br><br>";
+            //echo "Found comment with reddit.awkward{waits.for.anyone]: " . $id . "<br><br>";
             $idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe = anybodyOutThereWhoHasMeAsParentHeAskedKnowinglyNoActuallyINeedTheOLDESTOneOfMyKidsAndNotMyselfByTheWay($jsonObj, $id, $mintCommentThatIsNotFromDBButFromTheNet->author);
             if ($idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[0]->id === "") {
                 // Here: ($mintCommentThatIsNotFromDBButFromTheNet->body has reddit.awkward{waits.for.anyone]-tag) & ($mintCommentThatIsNotFromDBButFromTheNet has no children)
-                echo "still unanswered: " . $id;
+                //echo "still unanswered: " . $id;
                 $query = "SELECT * FROM prima_taga_unanswered WHERE commentpageid='$pageid' AND commentid='$id'";
                 $result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
                 $count3 = mysqli_num_rows($result3);
@@ -370,7 +397,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
             } else {
                 // Here: ($mintCommentThatIsNotFromDBButFromTheNet->body has reddit.awkward{waits.for.anyone]-tag) & ($mintCommentThatIsNotFromDBButFromTheNet HAS oldest child, who isn't me)
                 // Therefore: Find out if it is recorded in prima_taga_unanswered
-                echo "oldestReplyToQuestionInDireNeedOfAnyAnswer: (" . $id . ") oldest child id:" . $idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[0]->id . " time:" . $idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[1]->utc . " author: " . $idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[0]->author . "<br><br>";
+                //echo "oldestReplyToQuestionInDireNeedOfAnyAnswer: (" . $id . ") oldest child id:" . $idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[0]->id . " time:" . $idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[1]->utc . " author: " . $idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[0]->author . "<br><br>";
 
                 $backwiseOriginalPoster = $mintCommentThatIsNotFromDBButFromTheNet->author;
                 $answeredAtThisUTCTime = $idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[0]->utc;
@@ -404,7 +431,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
                     // Therefore: Insert and give pKarma
                     $dt2 = date("Y-m-d H:i:s");
                     $query = "INSERT INTO `redditawkward_com`.`prima_taga_unanswered` (`redditor`, `commentpageid`, `whentagfirstdetected`, `commentid`, `finallyrepliedbyredditor`, `utc_created`, `lastevaluatedingerman`) VALUES ('$backwiseOriginalPoster', '$pageid', '$dt2', '$id', '$kindAnsweringRedditor', '$answeredAtThisUTCTime', '$dt2');";
-                    echo "<br><br>QUERY: $query: $dt2<br><br>";
+                    //echo "<br><br>QUERY: $query: $dt2<br><br>";
                     mysqli_query($GLOBALS["___mysqli_ston"], $query);
 
                     appendToOneOfTheLongestSpeechesIveEverHeard("The answer with id: " . $idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[0]->id . " from the kind redditor: " . $kindAnsweringRedditor . " came so fast the system nearly got flabbergasted!", false);
@@ -422,10 +449,10 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
             givePKarmaForUseOfTagConditionally("reddit.awkward{waits.for.your.reply.only}", $cursoryRedditorWaiting, $pageid, $id, $subreddit, $pagename);
 
             // Here: $mintCommentThatIsNotFromDBButFromTheNet->body has reddit.awkward{waits.for.your.reply.only]-tag
-            echo "<br><br>Found comment with reddit.awkward{waits.for.your.reply.only]: " . $id . "<br><br>";
+            //echo "<br><br>Found comment with reddit.awkward{waits.for.your.reply.only]: " . $id . "<br><br>";
             $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
             $wantedAnswerersRedditorName = $wantedSecondPersonWithAlleFieldsInHere->author;
-            echo "<br><br>wantedAnswerersRedditorName: $wantedAnswerersRedditorName";
+            //echo "<br><br>wantedAnswerersRedditorName: $wantedAnswerersRedditorName";
             $query = "SELECT * FROM prima_tagc_status WHERE commentpageid='$pageid' AND commentidexpectingdirectanswerfromspecificredditor='$id'";
             $result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
             $count3 = mysqli_num_rows($result3);
@@ -441,24 +468,24 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
                 createCTagNotificationForSecondPerson($pageid, $id, $wantedAnswerersRedditorName, $cursoryRedditorWaiting, $subreddit, $pagename);
             }
             $idAndRedditorArrayOfVeryDifferentDirectChildrenWhoIsNtMe = anybodyOutThereWhoHasMeAsDirectParentHeAskedKnowinglyNoActuallyINeedAllOfMyKidsAndNotMyselfByTheWay($jsonObj, $id, $mintCommentThatIsNotFromDBButFromTheNet->author);
-            echo "<br><br>sizeof child array: " . sizeof($idAndRedditorArrayOfVeryDifferentDirectChildrenWhoIsNtMe) . ":<br><br>";
+            //echo "<br><br>sizeof child array: " . sizeof($idAndRedditorArrayOfVeryDifferentDirectChildrenWhoIsNtMe) . ":<br><br>";
             var_dump($idAndRedditorArrayOfVeryDifferentDirectChildrenWhoIsNtMe);
             if ($idAndRedditorArrayOfVeryDifferentDirectChildrenWhoIsNtMe[0]->id === "") {
-                echo "<br><br>reddit.awkward{waits.for.your.reply.only]: No answers yet to this comment " . $id;
+                //echo "<br><br>reddit.awkward{waits.for.your.reply.only]: No answers yet to this comment " . $id;
             } else {
                 // Here: ($mintCommentThatIsNotFromDBButFromTheNet->body has reddit.awkward{waits.for.your.reply.only] tag) & ($mintCommentThatIsNotFromDBButFromTheNet HAS one or more direct children, who isn't me)
                 // Therefore: Give positive and negative pKarma to those direct children
                 foreach ($idAndRedditorArrayOfVeryDifferentDirectChildrenWhoIsNtMe as $naughtyOrWellBehavedChild) {
                     $answerer = $naughtyOrWellBehavedChild->answerer;
-                    echo "<br><br>answerer: $answerer";
+                    //echo "<br><br>answerer: $answerer";
                     if ($answerer !== $wantedAnswerersRedditorName) {
                         // Here: The answerers are third-person
                         // Therefore: Search for replies by c-tag-angent in illegal third-person branch (Special rule)
-                        echo "<br><br>Violation! cid=" . $naughtyOrWellBehavedChild->id;
+                        //echo "<br><br>Violation! cid=" . $naughtyOrWellBehavedChild->id;
                         $appleNames = giveMeTheNamesOfAllApplesOnTheBranchWithThisCommentAsAxePointHmmm($jsonObj, $naughtyOrWellBehavedChild->id);
                         $violationCount = 0;
                         foreach ($appleNames as $apple) {
-                            echo "<br>apple: $apple  author:" . $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$apple]->author;
+                            //echo "<br>apple: $apple  author:" . $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$apple]->author;
                             if ($mintCommentThatIsNotFromDBButFromTheNet->author === $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$apple]->author) {
                                 // Here: Apple found which is tag-c-agent's
                                 // Give penalty
@@ -466,17 +493,17 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
                                 subtractPKarmaForWaitsForYourReplyOnlySelfDisciplineViolationConditionally($mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$apple]->author, $pageid, $apple, $naughtyOrWellBehavedChild->author, $subreddit, $pagename);
                             }
                         }
-                        echo "violationCount: $violationCount";
+                        //echo "violationCount: $violationCount";
                     } else {
                         // Here: Poster satisfied.
                         // Therefore: Give PKarma it hasn't already been given for this particular reddit.awkward{waits.for.your.reply.only] tag answering.
-                        echo "<br><br>Poster satisfied!";
+                        //echo "<br><br>Poster satisfied!";
                         $query = "SELECT pkarmadistributed FROM prima_tagc_status WHERE commentpageid='$pageid' AND commentidexpectingdirectanswerfromspecificredditor='$id'";
                         $result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
                         $row3 = mysqli_fetch_row($result3);
                         $cursoryPKarmaHasBeenDistributed = $row3[0];
                         $cursoryVeryVeryCursory = $cursoryPKarmaHasBeenDistributed === 'true' ? true : false;
-                        echo "<br><br>cursoryVeryVeryCursory: $cursoryVeryVeryCursory";
+                        //echo "<br><br>cursoryVeryVeryCursory: $cursoryVeryVeryCursory";
                         if (!$cursoryVeryVeryCursory) {
                             $query = "UPDATE prima_tagc_status SET pkarmadistributed='true' WHERE commentpageid='$pageid' AND commentidexpectingdirectanswerfromspecificredditor='$id'";
                             mysqli_query($GLOBALS["___mysqli_ston"], $query);
@@ -485,7 +512,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
                             giveRKarmaForUseOfTagConditionally("reddit.awkward{waits.for.your.reply.only}", $answerer, $cursoryRedditorWhoWaited, 1, $pageid, $id, $subreddit, $pagename);
 
                         } else {
-                            echo "<br><br>$wantedAnswerersRedditorName has already been awarded for answering $a";
+                            //echo "<br><br>$wantedAnswerersRedditorName has already been awarded for answering $a";
                         }
                     }
                 }
@@ -502,24 +529,24 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
             givePKarmaForUseOfTagConditionally("reddit.awkward{i.find.the.subject.unworthy.for.discussion}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
 
             $agentsCommentsParentId = $mintCommentThatIsNotFromDBButFromTheNet->parent_id;
-            echo "<br><br>agentsCommentsParentId: $agentsCommentsParentId";
+            //echo "<br><br>agentsCommentsParentId: $agentsCommentsParentId";
             if ($mainPostId !== $agentsCommentsParentId) {
                 // Here: Violation! reddit.awkward{i.find.this.unworthy.for.discussion] tag can just be used on this "level":answering main post
                 // Therefore: Give penalty
                 $anotherCommentsAuthor = $mintCommentThatIsNotFromDBButFromTheNet->author;
                 if ($anotherCommentsAuthor === $agentsCommentsAuthor) {
-                    echo "<br><br>Violation!";
-                    echo "<br><br>mTagAgentRedditorName: $mTagAgentRedditorName<br>anotherCommentsAuthor: $anotherCommentsAuthor";
+                    //echo "<br><br>Violation!";
+                    //echo "<br><br>mTagAgentRedditorName: $mTagAgentRedditorName<br>anotherCommentsAuthor: $anotherCommentsAuthor";
                     subtractPKarmaForTagMNotLevel2ViolationConditionally($mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
                 }
             }
 
             //$idsOfCommentWhoHasTOneParent = traverseA($jsonObj);
-            //echo "<br><br>Number of comments---: " . sizeof($idsOfCommentWhoHasTOneParent);
+            ////echo "<br><br>Number of comments---: " . sizeof($idsOfCommentWhoHasTOneParent);
             foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $kkey => $vvalue) {
                 if ($kkey !== $id) {
                     $anotherCommentsAuthor = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$kkey]->author;
-                    //echo "<br><br>mTagAgentRedditorName: $mTagAgentRedditorName<br>mTagAgentRedditorName: $anotherCommentsAuthor";
+                    ////echo "<br><br>mTagAgentRedditorName: $mTagAgentRedditorName<br>mTagAgentRedditorName: $anotherCommentsAuthor";
                     if ($anotherCommentsAuthor === $mTagAgentRedditorName) {
                         subtractPKarmaForTagMSelfDisciplineViolationConditionally($mTagAgentRedditorName, $pageid, $kkey, $subreddit, $pagename);
                     }
@@ -537,24 +564,24 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
             givePKarmaForUseOfTagConditionally("reddit.awkward{i.find.this.unworthy.for.discussion}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
 
             $agentsCommentsParentId = $mintCommentThatIsNotFromDBButFromTheNet->parent_id;
-            echo "<br><br>agentsCommentsParentId: $agentsCommentsParentId";
+            //echo "<br><br>agentsCommentsParentId: $agentsCommentsParentId";
             if ($mainPostId !== $agentsCommentsParentId) {
                 // Here: Violation! reddit.awkward{i.find.this.unworthy.for.discussion] tag can just be used on this "level":answering main post
                 // Therefore: Give penalty
                 $anotherCommentsAuthor = $mintCommentThatIsNotFromDBButFromTheNet->author;
                 if ($anotherCommentsAuthor === $agentsCommentsAuthor) {
-                    echo "<br><br>Violation!";
-                    echo "<br><br>mTagAgentRedditorName: $mTagAgentRedditorName<br>anotherCommentsAuthor: $anotherCommentsAuthor";
+                    //echo "<br><br>Violation!";
+                    //echo "<br><br>mTagAgentRedditorName: $mTagAgentRedditorName<br>anotherCommentsAuthor: $anotherCommentsAuthor";
                     subtractPKarmaForTagMNotLevel2ViolationConditionally($mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
                 }
             }
 
             //$idsOfCommentWhoHasTOneParent = traverseA($jsonObj);
-            //echo "<br><br>Number of comments---: " . sizeof($idsOfCommentWhoHasTOneParent);
+            ////echo "<br><br>Number of comments---: " . sizeof($idsOfCommentWhoHasTOneParent);
             foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $kkey => $vvalue) {
                 if ($kkey !== $id) {
                     $anotherCommentsAuthor = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$kkey]->author;
-                    //echo "<br><br>mTagAgentRedditorName: $mTagAgentRedditorName<br>mTagAgentRedditorName: $anotherCommentsAuthor";
+                    ////echo "<br><br>mTagAgentRedditorName: $mTagAgentRedditorName<br>mTagAgentRedditorName: $anotherCommentsAuthor";
                     if ($anotherCommentsAuthor === $mTagAgentRedditorName) {
                         subtractPKarmaForTagMSelfDisciplineViolationConditionally($mTagAgentRedditorName, $pageid, $kkey, $subreddit, $pagename);
                     }
@@ -686,8 +713,6 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 
             if ($mainPostId !== $mintCommentThatIsNotFromDBButFromTheNet->parent_id) {
                 subtractPKarmaForIDontThingTheOriginalBlaBlaBlaConditionally($mTagAgentRedditorName, "reddit.awkward{i.dont.think.the.original.post.has.been.addressed.yet}", $pageid, $id, $subreddit, $pagename);
-            } else {
-
             }
         }
     }
@@ -701,8 +726,6 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 
             if ($mainPostId !== $mintCommentThatIsNotFromDBButFromTheNet->parent_id) {
                 subtractPKarmaForIDontThingTheOriginalBlaBlaBlaConditionally($mTagAgentRedditorName, "reddit.awkward{i.dont.think.the.original.post.has.been.taken.seriously.yet}", $pageid, $id, $subreddit, $pagename);
-            } else {
-
             }
         }
     }
@@ -717,9 +740,6 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 
             if ($mainPostId !== $mintCommentThatIsNotFromDBButFromTheNet->parent_id) {
                 subtractPKarmaForIDontThingTheOriginalBlaBlaBlaConditionally($mTagAgentRedditorName, "reddit.awkward{i.dont.think.the.original.post.has.been.treated.respectfully}", $pageid, $id, $subreddit, $pagename);
-            } else {
-                if (!hasMoreWordsBesidesTheTagItselfDude($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{awkward}")) {
-                }
             }
         }
 	}
@@ -792,7 +812,7 @@ function addToBlackListConditionally($agentRedditor, $culpritRedditor) {
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "$culpritRedditor has already been added to blacklist by $agentRedditor!";
+		//echo "$culpritRedditor has already been added to blacklist by $agentRedditor!";
 		return;
 	}
 	else {
@@ -806,12 +826,15 @@ function addToBlackListConditionally($agentRedditor, $culpritRedditor) {
 function isUnbrokenTagSequenceBackwards($tag, $idStart, $idEnd, $json, $bigDataOYeah) {
 	$d = $idStart;
 	while ($c = getParentSemiDeprecated($d, $json)) {
-		echo "<br>c[0]:".$c[0];
+		//echo "<br>c[0]:".$c[0];
 		$body = $bigDataOYeah[$c[0]]->body;
 		$idUnderTheLup =  $c[0];
-		if ($idUnderTheLup === $idEnd) { return true; echo "<brChain is unbroken!"; }
+		if ($idUnderTheLup === $idEnd) { 
+			return true; 
+			//echo "<brChain is unbroken!";
+		}
 		if (strpos($body, $tag) === false) { 
-			echo "<brChain is broken for $tag in $body";		
+			//echo "<brChain is broken for $tag in $body";		
 			return false; 
 		}
 		$d = $c[0];
@@ -829,10 +852,10 @@ function isUnbrokenTagSequenceBackwards($tag, $idStart, $idEnd, $json, $bigDataO
 function roadBackToRootCointainsOneOrMoreOfThisTag($tag, $cid, $json, $bigDataOYeah) {
 	$d = $cid;
 	while ($c = getParentSemiDeprecated($d, $json)) {
-		echo "<br>c[0]:".$c[0];
+		//echo "<br>c[0]:".$c[0];
 		$body = $bigDataOYeah[$c[0]]->body;
 		if (strpos($body, $tag) !== false) { 
-			echo "<br>Body contains $tag:$body";		
+			//echo "<br>Body contains $tag:$body";		
 			return true; 
 		}
 		$d = $c[0];
@@ -842,37 +865,37 @@ function roadBackToRootCointainsOneOrMoreOfThisTag($tag, $cid, $json, $bigDataOY
 
 function giveMeTheNamesOfAllApplesOnTheBranchWithThisCommentAsAxePointHmmm($jsonObj, $cid) {
 	$idsOfCommentWhoHasTOneParent = traverseA($jsonObj);
-	echo "<br><br>Number of comments---: " . sizeof($idsOfCommentWhoHasTOneParent);
+	//echo "<br><br>Number of comments---: " . sizeof($idsOfCommentWhoHasTOneParent);
 	$leafs = Array();
 	$branches = Array();
 	foreach ($idsOfCommentWhoHasTOneParent as $kkey=>$vvalue) {
-		echo "<br>kkey: $kkey<br>vvalue->id:$vvalue->id<br>vvalue->parent_id:$vvalue->parent_id";
+		//echo "<br>kkey: $kkey<br>vvalue->id:$vvalue->id<br>vvalue->parent_id:$vvalue->parent_id";
 		//$idsOfCommentWhoHasTOneParentPointer = i;
-		//echo "<br><br>-----------------idsOfCommentWhoHasTOneParent id: " . $kkey;
+		////echo "<br><br>-----------------idsOfCommentWhoHasTOneParent id: " . $kkey;
 		$r = (isJustALeaf($kkey, $jsonObj));
-		//echo "<br><br>-----------------idsOfCommentWhoHasTOneParent id2: " . $kkey;
-		//echo "<br><br>r:".(string)$r;
+		////echo "<br><br>-----------------idsOfCommentWhoHasTOneParent id2: " . $kkey;
+		////echo "<br><br>r:".(string)$r;
 		if ($r) {
-			echo "<br><br>pushin";
+			//echo "<br><br>pushin";
 			array_push($leafs, $kkey);
 		}
 	}
-	echo "leaf count: " + sizeof($leafs);
+	//echo "leaf count: " + sizeof($leafs);
 	foreach ($leafs as $leaf) {
-		echo "<br>leaf:" . $leaf;	
+		//echo "<br>leaf:" . $leaf;	
 	}
 	for ($i = 0; $i < sizeof($leafs); $i++) {
 		//console.log("leaf: " + leafs[i]);
 		$s = constructBranch($leafs[$i], $jsonObj);
 		if ($s) { $branches[$i] = $s; }
 	}
-	echo "branch count: " + sizeof($branches);
+	//echo "branch count: " + sizeof($branches);
 	for ($i = 0; $i < sizeof($branches); $i++) {
 		//console.log("branch " + branches[i][0] + " size: " + branches[i].length);
-		echo "<br><br>branch: ";
+		//echo "<br><br>branch: ";
 		for ($b = 0; $b < sizeof($branches[$i]); $b++) {
 			//console.log("branch " + i + ": " + branches[i][b]);
-			echo "-".$branches[$i][$b];
+			//echo "-".$branches[$i][$b];
 		}
 	}
 	$rightBranches = Array();
@@ -881,38 +904,38 @@ function giveMeTheNamesOfAllApplesOnTheBranchWithThisCommentAsAxePointHmmm($json
 	for ($i = 0; $i < sizeof($branches); $i++) {
 		$branchoDancho = Array();
 		$foundCId = false;
-		echo "<br><br>branchodancho:(". $cid . ")";
+		//echo "<br><br>branchodancho:(". $cid . ")";
 		for ($b = 0; $b < sizeof($branches[$i]); $b++) {
 			//console.log("branch " + i + ": " + branches[i][b]);
 			if ($branches[$i][$b] === $cid) $foundCId = true;
 			array_push($branchoDancho, $branches[$i][$b]);
-			echo "+".$branches[$i][$b]."(".sizeof($branchoDancho).")";
+			//echo "+".$branches[$i][$b]."(".sizeof($branchoDancho).")";
 			
 		}
 		if ($foundCId) {
-			echo "<br><br>found: (".$i.")";
+			//echo "<br><br>found: (".$i.")";
 			$rightBranches[$rightBranchIndexTookThreeHoursForMeToFindThisBug] = Array();
 			for ($c = 0; $c < sizeof($branchoDancho); $c++) {
-				echo ".".$branchoDancho[$c];
+				//echo ".".$branchoDancho[$c];
 				array_push($rightBranches[$rightBranchIndexTookThreeHoursForMeToFindThisBug], $branchoDancho[$c]);
 			}
-			//echo "<br><br>rightBranches*:(" . sizeof($rightBranches[$rightBranchIndexTookThreeHoursForMeToFindThisBug]) . ")";
+			////echo "<br><br>rightBranches*:(" . sizeof($rightBranches[$rightBranchIndexTookThreeHoursForMeToFindThisBug]) . ")";
 			$rightBranchIndexTookThreeHoursForMeToFindThisBug++;
 		}
 	}
-	//echo "<br><br>lizey: " . sizeof($rightBranches);
-	//echo "<br><br>sizey: " . sizeof($rightBranches[0]);
+	////echo "<br><br>lizey: " . sizeof($rightBranches);
+	////echo "<br><br>sizey: " . sizeof($rightBranches[0]);
 	//var_dump($rightBranches);
 	for ($i = 0; $i < sizeof($rightBranches); $i++) {
-		//echo "<br><br>rightBranches:(" . sizeof($rightBranches[$i]) . ")";
+		////echo "<br><br>rightBranches:(" . sizeof($rightBranches[$i]) . ")";
 	}
 	$commentsOnBranch = Array();
 	for ($i = 0; $i < sizeof($rightBranches); $i++) {
 		$foundAxePoint = true;
-		//echo "<br><br>rightBranches:(" . sizeof($rightBranches[$i]) . ")";
+		////echo "<br><br>rightBranches:(" . sizeof($rightBranches[$i]) . ")";
 		for ($b = 0; $b < sizeof($rightBranches[$i]); $b++) {
 			if ($foundAxePoint) {	
-				//echo "#".$rightBranches[$i][$b];
+				////echo "#".$rightBranches[$i][$b];
 				if (!in_array($rightBranches[$i][$b], $commentsOnBranch)) {
 					array_push($commentsOnBranch, $rightBranches[$i][$b]);
 				}
@@ -929,7 +952,7 @@ function constructBranch($k, $jsonObj) {
 	$i = 1;
 	array_push($a, $k);
 	while ($c = getParentSemiDeprecated($a[$i-1], $jsonObj)) {
-		echo "<br>c[0]:".$c[0];
+		//echo "<br>c[0]:".$c[0];
 		if ($c[0]) array_push($a, $c[0]);
 		$i++;
 	}
@@ -939,18 +962,24 @@ function constructBranch($k, $jsonObj) {
 function getParentSemiDeprecated($k, $jsonObj) {
 	$commentIdToLookFor = $k;
 	$parentC = traverseC($jsonObj, $commentIdToLookFor);
-	echo "<br>commentIdToLookFor: $commentIdToLookFor<br>parentC: $parentC[0]";
+	//echo "<br>commentIdToLookFor: $commentIdToLookFor<br>parentC: $parentC[0]";
 	return $parentC;
 }
 
 function isJustALeaf($idf, $jsonObj) {
 	$parentIdToLookFor = "t1_" . $idf;
-	echo "<br><br><br><br>TESTING ID: " . $parentIdToLookFor;
+	//echo "<br><br><br><br>TESTING ID: " . $parentIdToLookFor;
 	$pointedTo = traverseB($jsonObj, $parentIdToLookFor);
-	if ($pointedTo[0]->val === 'yes') {echo "<br>***************************d******************************"; return false;}
-	else if ($pointedTo[0]->val === 'no') {echo "<br>ooooooooooooooooooooodooooooooooooooooooooooooooooooooo"; return true;}
-	else {echo "<br>###############################d#########################################"; return true;}
-	//if (!$pointedTo) echo "NOT LEAF: " . $idf;
+	if ($pointedTo[0]->val === 'yes') {
+		//echo "<br>***************************d******************************"; return false;
+	}
+	else if ($pointedTo[0]->val === 'no') {
+		//echo "<br>ooooooooooooooooooooodooooooooooooooooooooooooooooooooo"; return true;
+	}
+	else {
+		//echo "<br>###############################d#########################################"; return true;
+	}
+	//if (!$pointedTo) //echo "NOT LEAF: " . $idf;
 	
 
 
@@ -966,18 +995,18 @@ function isJustALeaf($idf, $jsonObj) {
 
 function subtractPKarmaConditionally($redditor, $tag, $pid, $cid, $subreddit, $pagename, $motivation, $points) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
-	echo "<br>$query";
+	//echo "<br>$query";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "<br>$redditor has already been given a penalty!";
+		//echo "<br>$redditor has already been given a penalty!";
 	}
 	else {
- 		echo "<br><br>Awarding $points to $redditor";
+ 		//echo "<br><br>Awarding $points to $redditor";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
@@ -987,13 +1016,13 @@ function createNotification($pageid, $cid, $redditor, $subreddit, $pagename , $n
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "$redditor notification ('$notificationMessage') already sent";
+		//echo "$redditor notification ('$notificationMessage') already sent";
 	}
 	else {
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, '$notificationMessage', '$tag', '$rule', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
@@ -1003,17 +1032,17 @@ function createNeedToApologizeBeforeChattingNotificationForBothFirstAndSecondPer
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "$needsToApologizeRedditorName and $angryPersonRedditorName has already been notified of chat situation in conflict!";
+		//echo "$needsToApologizeRedditorName and $angryPersonRedditorName has already been notified of chat situation in conflict!";
 	}
 	else {
 		$notification = "Redditor $needsToApologizeRedditorName needs to apologize with reddit.awkward{i.apologize} $angryPersonRedditorName or reddit.awkward{guarded.apology} for this incidence: http://  before they should engage in direct conversation! No relational karma or Awkward Karma has been subtracted from either of you. Thanks.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$needsToApologizeRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, '$notification', 'reddit.awkward{i.apologize}' 'commentatorExpectsAnswerFrom', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$angryPersonRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, '$notification', 'reddit.awkward{i.apologize}' 'shouldApologizeBeforeChatting', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
@@ -1023,10 +1052,10 @@ function giveRKarmaForUseOfTagConditionally($tag, $redditorFirstPerson, $reddito
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "<br>redditors $redditorFirstPerson (firstperson) and $redditorSecondPerson (secondperson) has already been awarded.";
+		//echo "<br>redditors $redditorFirstPerson (firstperson) and $redditorSecondPerson (secondperson) has already been awarded.";
 	}
 	else {
- 		echo "<br><br>Awarding $rKarma in relational karma to firstperson: $redditorFirstPerson and secondperson: $redditorSecondPerson";
+ 		//echo "<br><br>Awarding $rKarma in relational karma to firstperson: $redditorFirstPerson and secondperson: $redditorSecondPerson";
 		$motivation = "$redditorFirstPerson and $redditorSecondPerson were both awarded $rKarma in relational karma because $redditorFirstPerson used the tag: $tag";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
@@ -1038,60 +1067,60 @@ $sql = "INSERT INTO  `redditawkward_com`.`prima_relation (`firstperson`, `second
 
 function subtractPKarmaForTagInspiredNotBeingFollowedUpByIMeanItTagInTimeConditionally($redditor, $pid, $cid, $subreddit, $pagename) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
-	echo "<br>$query";
+	//echo "<br>$query";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "<br>$redditor has already been given a penalty!";
+		//echo "<br>$redditor has already been given a penalty!";
 	}
 	else {
 		$actualPoints = -10;
- 		echo "<br><br>Awarding $actualPoints to $redditor";
+ 		//echo "<br><br>Awarding $actualPoints to $redditor";
 		$motivation = "You have received a penalty of $actualPoints because you didn't use the reddit.awkward{no.i.mean.it} tag as a reply to the comment where you used reddit.awkward{your.comment.inspired.me}: §3 Should always be followed by an answer to yourself, within 10 minutes, with a single, stand-alone reddit.awkward{no.i.mean.it} tag.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagInspiredNotBeingFollowedUpByIMeanItTagInTimeConditionally', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		 mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
 
 function subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally($redditor, $tag, $pid, $cid, $subreddit, $pagename) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
-	echo "<br>$query";
+	//echo "<br>$query";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "<br>$redditor has already been given a penalty!";
+		//echo "<br>$redditor has already been given a penalty!";
 	}
 	else {
 		$actualPoints = -10;
- 		echo "<br><br>Awarding $actualPoints to $redditor";
+ 		//echo "<br><br>Awarding $actualPoints to $redditor";
 		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt $tag tagget på et andet horisontalt niveau i diskussionen end som direkte svar på hovedindlægget.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		 mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
 
 function subtractPKarmaForIDontThingTheOriginalBlaBlaBlaConditionally($redditor, $tag, $pid, $cid, $subreddit, $pagename) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
-	echo "<br>$query";
+	//echo "<br>$query";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "<br>$redditor has already been given a penalty";
+		//echo "<br>$redditor has already been given a penalty";
 	}
 	else {
 		$actualPoints = -10;
- 		echo "<br><br>Awarding $actualPoints to $redditor";
+ 		//echo "<br><br>Awarding $actualPoints to $redditor";
 		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt $tag tagget på et andet horisontalt niveau i diskussionen end som direkte svar på hovedindlægget.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForIDontThingTheOriginalBlaBlaBlaConditionally', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		 mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
@@ -1102,15 +1131,15 @@ function givePKarmaForCorrectUseOfNoProblemosTagConditionally($redditorJTagAgent
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "$redditorJTagAgent has already been given a penalty";
+		//echo "$redditorJTagAgent has already been given a penalty";
 	}
 	else {
- 		echo "<br><br>Awarding $points to $redditorJTagAgent";
+ 		//echo "<br><br>Awarding $points to $redditorJTagAgent";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditorJTagAgent', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'givePKarmaForCorrectUseOfNoProblemosTagConditionally', '$subreddit', '$pagename');";
-		//echo "<br><br>$sql";
+		////echo "<br><br>$sql";
 		queryDoorslamAndExpectConditionally($redditorJTagAgent, $apologizingRedditor, $subreddit, $pid, $pagename, "reddit.awkward{no.problem}", $cid, $sql);
 	}
 }
@@ -1118,18 +1147,18 @@ function givePKarmaForCorrectUseOfNoProblemosTagConditionally($redditorJTagAgent
 
 function subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally($redditor, $nonApologizingRedditor, $pid, $cid, $subreddit, $pagename, $motivation, $points) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
-	echo "<br>$query";
+	//echo "<br>$query";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "<br>$redditor has already been given a penalty";
+		//echo "<br>$redditor has already been given a penalty";
 	}
 	else {
- 		echo "<br><br>Awarding $points to $redditor";
+ 		//echo "<br><br>Awarding $points to $redditor";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
@@ -1142,16 +1171,16 @@ function givePKarmaForCorrectUseIApologizeTagConditionally($redditorJTagAgent, $
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "$redditorJTagAgent has already been given a penalty";
+		//echo "$redditorJTagAgent has already been given a penalty";
 	}
 	else {
 		$actualPoints = 15;
- 		echo "<br><br>Awarding $actualPoints to $redditorJTagAgent";
+ 		//echo "<br><br>Awarding $actualPoints to $redditorJTagAgent";
 		$motivation = "Du har fået $actualPoints for at sige undskyld til $angryRedditor ved at bruge reddit.awkward{i.apologize]-tagget.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditorJTagAgent', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'givePKarmaForCorrectUseIApologizeTagConditionally', '$subreddit', '$pagename');";
-		//echo "<br><br>$sql";
+		////echo "<br><br>$sql";
 		queryDoorslamAndExpectConditionally($redditorJTagAgent, $angryRedditor, $subreddit, $pid, $pagename, "reddit.awkward{i.apologize}", $cid, $sql);
 	}
 }
@@ -1159,20 +1188,20 @@ function givePKarmaForCorrectUseIApologizeTagConditionally($redditorJTagAgent, $
 
 function subtractPKarmaForTagQAbsurdApologyConditionally($redditor, $pid, $cid, $subreddit, $pagename) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
-	echo "<br>$query";
+	//echo "<br>$query";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "<br>$redditor has already been given a penalty";
+		//echo "<br>$redditor has already been given a penalty";
 	}
 	else {
 		$actualPoints = -10;
- 		echo "<br><br>Awarding $actualPoints to $redditor";
+ 		//echo "<br><br>Awarding $actualPoints to $redditor";
 		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har sagt undskyld ved at bruge reddit.awkward{i.apologize]-tagget uden at gøre det overfor en bruger af ¤o eller ¤p-tagget.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagQAbsurdApologyConditionally', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		 mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
@@ -1185,16 +1214,16 @@ function givePKarmaForCorrectUseOfPleaseUseAKTagsFromHereTagConditionally($reddi
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "$redditorJTagAgent has already been given a penalty";
+		//echo "$redditorJTagAgent has already been given a penalty";
 	}
 	else {
 		$actualPoints = 5;
- 		echo "<br><br>Awarding $actualPoints to $redditorJTagAgent";
+ 		//echo "<br><br>Awarding $actualPoints to $redditorJTagAgent";
 		$motivation = "Du har fået $actualPoints for at bruge ¤j-tagget korrekt til at danne en ubrudt kæde af ¤j-tags.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditorJTagAgent', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'givePKarmaForCorrectUseOfPleaseUseAKTagsFromHereTagConditionally', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
@@ -1202,20 +1231,20 @@ function givePKarmaForCorrectUseOfPleaseUseAKTagsFromHereTagConditionally($reddi
 
 function subtractPKarmaForTagJSelfDisciplineViolationConditionally($redditor, $pid, $cid, $subreddit, $pagename) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
-	echo "<br>$query";
+	//echo "<br>$query";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "<br>$redditor has already been given a penalty";
+		//echo "<br>$redditor has already been given a penalty";
 	}
 	else {
 		$actualPoints = -10;
- 		echo "<br><br>Awarding $actualPoints to $redditor";
+ 		//echo "<br><br>Awarding $actualPoints to $redditor";
 		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har undladt at bruge ¤j-tagget i forgreningerne efter et anvendt ¤j-tag.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagJSelfDisciplineViolationConditionally', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
@@ -1225,16 +1254,16 @@ function subtractPKarmaForTagMSelfDisciplineViolationConditionally($redditor, $p
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "<br>$redditor has already been given a penalty";
+		//echo "<br>$redditor has already been given a penalty";
 	}
 	else {
 		$actualPoints = -10;
- 		echo "<br><br>Awarding $actualPoints to $redditor";
+ 		//echo "<br><br>Awarding $actualPoints to $redditor";
 		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt m-tagget og alligevel blandet dig i diskussionen på kommentar-siden.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagMSelfDisciplineViolationConditionally', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
@@ -1244,16 +1273,16 @@ function subtractPKarmaForTagMNotLevel2ViolationConditionally($redditor, $pid, $
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "<br>$redditor has already been given a penalty";
+		//echo "<br>$redditor has already been given a penalty";
 	}
 	else {
 		$actualPoints = -10;
- 		echo "<br><br>Awarding $actualPoints to $redditor";
+ 		//echo "<br><br>Awarding $actualPoints to $redditor";
 		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt m-tagget på et andet niveau i diskussionen end som direkte svar på hovedindlægget eller linket.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagMNotLevel2ViolationConditionally', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		 mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
@@ -1263,31 +1292,10 @@ function givePKarmaConditionally($tag, $redditorWaiting, $pid, $cid, $subreddit,
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "<br>$redditorWaiting has already been given Awkward Karma";
+		//echo "<br>$redditorWaiting has already been given Awkward Karma";
 	}
 	else {
- 		echo "<br><br>Awarding $points to $redditorWaiting";
-		$dt2=date("Y-m-d H:i:s");
-		$t = time();
-		$tagFullName = "reddit.awkward{" + $tag + "}";
-		$points = $awkwardKarmaRewards[$tagFullName];
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditorWaiting', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'givePKarmaForUseOfTagConditionally', '$subreddit', '$pagename', 5);";
-		echo "<br><br>$sql";
-		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
-	}
-}
-
-function givePKarmaForUseOfTagConditionally($tag, $redditorWaiting, $pid, $cid, $subreddit, $pagename) {
-	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditorWaiting' AND pageid='$pid' AND commentid='$cid'";
-	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
-	$count3 = mysqli_num_rows($result3);
-	if ($count3 > 0) {
-		echo "<br>$redditorWaiting has already been given Awkward Karma";
-	}
-	else {
-        $points = 5;
- 		echo "<br><br>Awarding $points to $redditorWaiting";
-		$motivation = "You have received $points for using the $tag tag.";
+ 		//echo "<br><br>Awarding $points to $redditorWaiting";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$tagFullName = "reddit.awkward{" + $tag + "}";
@@ -1298,19 +1306,40 @@ function givePKarmaForUseOfTagConditionally($tag, $redditorWaiting, $pid, $cid, 
 	}
 }
 
+function givePKarmaForUseOfTagConditionally($tag, $redditorWaiting, $pid, $cid, $subreddit, $pagename) {
+	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditorWaiting' AND pageid='$pid' AND commentid='$cid'";
+	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
+	$count3 = mysqli_num_rows($result3);
+	if ($count3 > 0) {
+		//echo "<br>$redditorWaiting has already been given Awkward Karma";
+	}
+	else {
+        $points = 5;
+ 		//echo "<br><br>Awarding $points to $redditorWaiting";
+		$motivation = "You have received $points for using the $tag tag.";
+		$dt2=date("Y-m-d H:i:s");
+		$t = time();
+		$tagFullName = "reddit.awkward{" + $tag + "}";
+		$points = $awkwardKarmaRewards[$tagFullName];
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditorWaiting', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'givePKarmaForUseOfTagConditionally', '$subreddit', '$pagename', 5);";
+		////echo "<br><br>$sql";
+		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
+	}
+}
+
 function subtractPKarmaForPlainAwkwardTagViolationConditionally($redditor, $pid, $cid, $subreddit, $pagename, $motivation, $actualPoints) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "<br>$redditor has already been given his penalty for subtractPKarmaForPlainAwkwardTagViolationConditionally";
+		//echo "<br>$redditor has already been given his penalty for subtractPKarmaForPlainAwkwardTagViolationConditionally";
 	}
 	else {
- 		echo "<br><br>Penalty: $actualPoints to $redditor";
+ 		//echo "<br><br>Penalty: $actualPoints to $redditor";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForPlainAwkwardTagViolationConditionally', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
@@ -1320,30 +1349,30 @@ function subtractPKarmaForWaitsForYourReplyOnlySelfDisciplineViolationConditiona
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "<br>$redditor has already been given a penalty";
+		//echo "<br>$redditor has already been given a penalty";
 	}
 	else {
 		$actualPoints = -10;
- 		echo "<br><br>Awarding $actualPoints to $redditor";
+ 		//echo "<br><br>Awarding $actualPoints to $redditor";
 		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt c-tagget og alligevel blandet dig i $intruderRedditor s vrøvl.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForWaitsForYourReplyOnlySelfDisciplineViolationConditionally', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
 
 function givePKarmaForWaitsForYourReplyOnlyUnconditionally($kindAnsweringRedditor, $tagCAgentExpectingAnswer, $pid, $cid, $subreddit, $pagename) {
-	echo "<br><br>award show2*!!<br><br>";
+	//echo "<br><br>award show2*!!<br><br>";
 	$wildestDreamPoints = ( (time() - $utc) / (60*10));
 	$actualPoints = 10;
- 	echo "<br><br>Awarding $actualPoints to $kindAnsweringRedditor";
+ 	//echo "<br><br>Awarding $actualPoints to $kindAnsweringRedditor";
 	$motivation = "Fordi du var så sød at svare på kommentaren fra $tagCAgentExpectingAnswer som ønskede at specifikt du skulle svare og som ikke engang gad at se på andre svar (hihi!)!";
 	$dt2=date("Y-m-d H:i:s");
 	$t = time();
 	$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$kindAnsweringRedditor', '$pid', '$cid' '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'givePKarmaForWaitsForYourReplyOnlyUnconditionally', '$subreddit', '$pagename');";
-	//echo "<br><br>query: $sql<br><br>";
+	////echo "<br><br>query: $sql<br><br>";
 	queryDoorslamAndExpectConditionally($tagCAgentExpectingAnswer, $kindAnsweringRedditor, $subreddit, $pid, $pagename, "reddit.awkward{waits.for.your.reply.only}", $cid, $sql);
 
 }
@@ -1354,21 +1383,21 @@ function givePKarmaForTagWaitsForAnyPersonConditionally($kindAnsweringRedditor, 
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "<br>$redditor has already been awarded!";
+		//echo "<br>$redditor has already been awarded!";
 	}
 	else {
-		echo "award show*!!<br><br>";
+		//echo "award show*!!<br><br>";
 		$wildestDreamPoints = ( (time() - $utc) / (60*10));
 		$actualPoints = $wildestDreamPoints;
 		if ($actualPoints < 5) $actualPoints = 5;
 		if ($actualPoints > 20) $actualPoints = 20;
-	 	echo "Awarding $actualPoints to $kindAnsweringRedditor";
+	 	//echo "Awarding $actualPoints to $kindAnsweringRedditor";
 		$motivation = "Fordi du var så sød at svare på kommentaren fra $backwiseOriginalPoster!";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$kindAnsweringRedditor', '$pid', '$cid',  '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'givePKarmaForTagWaitsForAnyPersonConditionally', '$subreddit', '$pagename');";
 		queryDoorslamAndExpectConditionally($backwiseOriginalPoster, $kindAnsweringRedditor, $subreddit, $pid, $pagename, "reddit.awkward{waits.for.anyone}", $cid, $sql);
-		//echo "query: $sql<br><br>";
+		////echo "query: $sql<br><br>";
 	}
 
 }
@@ -1387,7 +1416,7 @@ function queryDoorslamAndExpectConditionally($firstPerson, $secondPerson, $subre
 		$t = time();
 		$motivation = "You need to apologize to $secondPerson before you should speak to him/her. You used the tag: $tag.";
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$firstPerson', '$pageid', '$cid',  '$dt2', '$t', '-5', 'false', NULL, '$motivation', 'givePKarmaForTagWaitsForAnyPersonConditionally', '$subreddit', '$pagename');";
-		//echo "query: $sql<br><br>";
+		////echo "query: $sql<br><br>";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 	if (needsToApologize($secondPerson, $firstPerson)) {
@@ -1396,7 +1425,7 @@ function queryDoorslamAndExpectConditionally($firstPerson, $secondPerson, $subre
 		$t = time();
 		$notificationMessage = "$secondPerson needs to apologize to  before he/she should speak to you. He/she used the tag: $tag. ";
 		$rule = "General Rules: §4 Redditors shouldn't talk to each other after A has used either reddit.awkward{i.will.not.reply.and.expect.apology} or reddit.awkward{doorslam}. When A has apologized they can talk to each other again.";
-		//echo "query: $sql<br><br>";
+		////echo "query: $sql<br><br>";
 		createNotification($pageid, $cid, $firstPerson, $subreddit, $pagename , $notificationMessage, $tag, $rule);
 	}
 	if (!$flagged) {
@@ -1412,21 +1441,21 @@ function createCTagNotificationForSecondPerson($pageid, $cid, $wantedAnswerersRe
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
-		echo "$wantedAnswerersRedditorName has already been notified!";
+		//echo "$wantedAnswerersRedditorName has already been notified!";
 	}
 	else {
 		$notification = "Redditoren $cursoryRedditorWaiting afventer svar direkte fra dig. Klik på linket yderst til højre for at se $cursoryRedditorWaiting-s kommentar!";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$wantedAnswerersRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, '$notification', 'reddit.awkward{waits.for.your.reply.only}', 'commentatorExpectsAnswerFrom', '$subreddit', '$pagename');";
-		echo "<br><br>$sql";
+		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
 
 
 function anybodyOutThereWhoHasMeAsDirectParentHeAskedKnowinglyNoActuallyINeedAllOfMyKidsAndNotMyselfByTheWay($jsonObj, $cid, $cTagAgentRedditorName) {
-	echo "<br><br>looking for this id: $cid<br><br>tag agent: $cTagAgentRedditorName";
+	//echo "<br><br>looking for this id: $cid<br><br>tag agent: $cTagAgentRedditorName";
 	return traverseF($jsonObj, $cid, $cTagAgentRedditorName);
 }
 
@@ -1440,9 +1469,9 @@ function appendToOneOfTheLongestSpeechesIveEverHeard($str, $printNowQuestionMark
 	static $strArray, $c;
 	$strArray[$c++]=$str;
 	if ($printNowQuestionMark) {
-		echo "<br><br><br>ANNUAL REPORT OF VERY BAD JOKES:<br><br><br>";
+		//echo "<br><br><br>ANNUAL REPORT OF VERY BAD JOKES:<br><br><br>";
 		var_dump($strArray);
-		echo "END OF ANNUAL REPORT OF VERY BAD JOKES:<br><br><br>";
+		//echo "END OF ANNUAL REPORT OF VERY BAD JOKES:<br><br><br>";
 	}
 }
 
@@ -1551,7 +1580,7 @@ function traverseB($x, $parentIdToLookFor, &$pointedTo = array()) {
     traverseArrayB($x, $parentIdToLookFor, $pointedTo);
   }
   else if (is_object($x)) {	
-	//echo "<br>" . $lookOut . " ". $lookOutForId;
+	////echo "<br>" . $lookOut . " ". $lookOutForId;
     	traverseObjectB($x, $parentIdToLookFor, $pointedTo);
   }
   else {
@@ -1573,14 +1602,14 @@ function traverseObjectB($obj, $parentIdToLookFor, &$pointedTo = array()) {
   foreach($properties as $key) {
 		if ($key === "parent_id") {
 			$string2 = $array['parent_id'];
-			//echo "<br><br>string2: $string2<br>parentIdToLookFor: $parentIdToLookFor";
+			////echo "<br><br>string2: $string2<br>parentIdToLookFor: $parentIdToLookFor";
 			
 			if (0 === strpos($string2, 't1_') && $parentIdToLookFor === $string2) {
 				if (!$pointedTo[0]) $pointedTo[0] = new stdClass();
 				$pointedTo[0]->val = 'yes';
 			}
 			else {
-				//echo "matcho!";
+				////echo "matcho!";
 				/*if (!$pointedTo[0]) $pointedTo[0] = new stdClass();
 				$pointedTo[0]->val = 'no';*/
 			}
@@ -1596,7 +1625,7 @@ function traverseC($x, $idToLookFor, &$parentC = array()) {
     traverseArrayC($x, $idToLookFor, $parentC);
   }
   else if (is_object($x)) {	
-//echo "<br>" . $lookOut . " ". $lookOutForId;
+////echo "<br>" . $lookOut . " ". $lookOutForId;
     traverseObjectC($x, $idToLookFor, $parentC);
   }
   else {
@@ -1628,7 +1657,7 @@ function traverseG($x, &$in_arr = array()) {  // <-- note the reference '&'
     traverseArrayG($x, $in_arr);
   }
   else if (is_object($x)) {	
-	//echo "<br>" . $lookOut . " ". $lookOutForId;
+	////echo "<br>" . $lookOut . " ". $lookOutForId;
     	traverseObjectG($x, $in_arr);
   }
   else {
@@ -1648,7 +1677,7 @@ function traverseObjectG($obj, &$in_arr = array()) {
   $properties = array_keys($array);
   foreach($properties as $key) {
 		if ($key == "body") {
-			//echo "<br><br>Id:" . $rememberOThatIdYeah . " Body:" . $array['body'];
+			////echo "<br><br>Id:" . $rememberOThatIdYeah . " Body:" . $array['body'];
 			$in_arr[$rememberOThatIdYeah]->body = $array['body'];
 		}
 		if ($key == "parent_id") { if (!$in_arr[$rememberOThatIdYeah] ) { $in_arr[$rememberOThatIdYeah] = new stdClass();} $in_arr[$rememberOThatIdYeah]->parent_id = substr($array['parent_id'], 3); }
@@ -1673,12 +1702,12 @@ function traverseE($x, $commentIdToLookFor, $originalBackwiseDaddyPoster, &$olde
 		$oldestIdeaEverKnownToManFollowedByOldestTimeFollowedByAuthor[0]->author = "";
 	}
   if (is_array($x)) {
-		//echo "<br><br> array!";
+		////echo "<br><br> array!";
     traverseArrayE($x, $commentIdToLookFor, $originalBackwiseDaddyPoster, $oldestIdeaEverKnownToManFollowedByOldestTimeFollowedByAuthor);
   }
   else if (is_object($x)) {	
-	//echo "<br>" . $lookOut . " ". $lookOutForId;	
-			//echo "<br><br> object!";
+	////echo "<br>" . $lookOut . " ". $lookOutForId;	
+			////echo "<br><br> object!";
     	traverseObjectE($x, $commentIdToLookFor, $originalBackwiseDaddyPoster, $oldestIdeaEverKnownToManFollowedByOldestTimeFollowedByAuthor);
   }
   else {
@@ -1700,24 +1729,24 @@ function traverseObjectE($obj, $commentIdToLookFor, $originalBackwiseDaddyPoster
 	foreach($properties as $key) {
 		if ($key == "created_utc") {
 			$created_utc = $array['created_utc'];
-			echo "<br><br>Id:" . $rememberOThatIdYeah;
-			echo "<br><br>look for Id:" . $commentIdToLookFor;
-			echo "<br><br>Parent id:" . $rememberOThatParentIdYee;
-			echo "<br><br>created_utc:" . $created_utc;
-			echo "<br><br>-oldest id:" . $oldestIdeaEverKnownToManFollowedByOldestTimeFollowedByAuthor[0]->id;
-			echo "<br><br>-oldest times:" . $oldestIdeaEverKnownToManFollowedByOldestTimeFollowedByAuthor[0]->utc;
-			echo "<br><br><br><br><br><br>";
+			//echo "<br><br>Id:" . $rememberOThatIdYeah;
+			//echo "<br><br>look for Id:" . $commentIdToLookFor;
+			//echo "<br><br>Parent id:" . $rememberOThatParentIdYee;
+			//echo "<br><br>created_utc:" . $created_utc;
+			//echo "<br><br>-oldest id:" . $oldestIdeaEverKnownToManFollowedByOldestTimeFollowedByAuthor[0]->id;
+			//echo "<br><br>-oldest times:" . $oldestIdeaEverKnownToManFollowedByOldestTimeFollowedByAuthor[0]->utc;
+			//echo "<br><br><br><br><br><br>";
 			if ($commentIdToLookFor === $rememberOThatParentIdYee && $rememberOThatAuthorYeah !== "[deleted]") {
 				if ($originalBackwiseDaddyPoster !== $rememberOThatAuthorYeah) {
-					echo "<br><br>It's a match!!!";
+					//echo "<br><br>It's a match!!!";
 					if ($created_utc < $oldestIdeaEverKnownToManFollowedByOldestTimeFollowedByAuthor[0]->utc) { 
-						//echo "<br><br>Kartoffel!";
+						////echo "<br><br>Kartoffel!";
 						$oldestIdeaEverKnownToManFollowedByOldestTimeFollowedByAuthor[0]->id = $rememberOThatIdYeah; 
 						$oldestIdeaEverKnownToManFollowedByOldestTimeFollowedByAuthor[0]->utc = $created_utc; 
 						$oldestIdeaEverKnownToManFollowedByOldestTimeFollowedByAuthor[0]->author = $rememberOThatAuthorYeah; 
 					}
 					else {
-						echo "<br><br>ALERT: Schnuffel!";
+						//echo "<br><br>ALERT: Schnuffel!";
 					}
 				}
 				else {
@@ -1727,10 +1756,10 @@ function traverseObjectE($obj, $commentIdToLookFor, $originalBackwiseDaddyPoster
 		}
 		if ($key == "parent_id") {
 			$rememberOThatParentIdYee = substr($array['parent_id'], 3);
-		 	//echo "<br><br>parent id: " . $rememberOThatParentIdYee;
+		 	////echo "<br><br>parent id: " . $rememberOThatParentIdYee;
 		}
-		if ($key == "author") { $rememberOThatAuthorYeah = $array['author']; /*echo "<br><br>asdf author: " . $rememberOThatAuthorYeah;*/ }
-		if ($key == "id") { $rememberOThatIdYeah = $array['id']; /*echo "<br><br>asdf id: " . $rememberOThatIdYeah;*/ }
+		if ($key == "author") { $rememberOThatAuthorYeah = $array['author']; /*//echo "<br><br>asdf author: " . $rememberOThatAuthorYeah;*/ }
+		if ($key == "id") { $rememberOThatIdYeah = $array['id']; /*//echo "<br><br>asdf id: " . $rememberOThatIdYeah;*/ }
 		traverseE($obj->$key, $commentIdToLookFor, $originalBackwiseDaddyPoster, $oldestIdeaEverKnownToManFollowedByOldestTimeFollowedByAuthor);
 	}
 }
@@ -1750,12 +1779,12 @@ function traverseF($x, $idWaitingToBeMatchedByOneOrMoreParentIds, $cTagAgentRedd
 		//$allMyDirectChildrenExceptErMe[0]->answerer = "";
 	//}
   if (is_array($x)) {
-		//echo "<br><br> array!";
+		////echo "<br><br> array!";
     traverseArrayF($x, $idWaitingToBeMatchedByOneOrMoreParentIds, $cTagAgentRedditorName, $allMyDirectChildrenExceptErMe);
   }
   else if (is_object($x)) {	
-	//echo "<br>" . $lookOut . " ". $lookOutForId;	
-			//echo "<br><br> object!";
+	////echo "<br>" . $lookOut . " ". $lookOutForId;	
+			////echo "<br><br> object!";
     	traverseObjectF($x, $idWaitingToBeMatchedByOneOrMoreParentIds, $cTagAgentRedditorName, $allMyDirectChildrenExceptErMe);
   }
   else {
@@ -1777,23 +1806,23 @@ function traverseObjectF($obj, $idWaitingToBeMatchedByOneOrMoreParentIds, $cTagA
   foreach($properties as $key) {
 	if ($key == "parent_id") {
 		$rememberOThatParentIdYee = substr($array['parent_id'], 3);
-		echo "<br><br>parentIdToLookFor: $idWaitingToBeMatchedByOneOrMoreParentIds<br><br>rememberOThatParentIdYee: $rememberOThatParentIdYee<br><br>id: $rememberOThatIdYeah<br><br>rememberOThatAuthorYeah: $rememberOThatAuthorYeah<br><br>cTagAgentRedditorName: $cTagAgentRedditorName";
+		//echo "<br><br>parentIdToLookFor: $idWaitingToBeMatchedByOneOrMoreParentIds<br><br>rememberOThatParentIdYee: $rememberOThatParentIdYee<br><br>id: $rememberOThatIdYeah<br><br>rememberOThatAuthorYeah: $rememberOThatAuthorYeah<br><br>cTagAgentRedditorName: $cTagAgentRedditorName";
 		if ($idWaitingToBeMatchedByOneOrMoreParentIds === $rememberOThatParentIdYee) {
-			echo "<br><br>Found!";
+			//echo "<br><br>Found!";
 			if ($rememberOThatAuthorYeah !== $cTagAgentRedditorName) {
 				$a = new stdClass();
 				$a->id = $rememberOThatIdYeah;
-				echo "<br><br> rememberOThatIdYeah: $rememberOThatIdYeah<br><br>rememberOThatAuthorYeah: $rememberOThatAuthorYeah<br><br>cTagAgentRedditorName: $cTagAgentRedditorName";
+				//echo "<br><br> rememberOThatIdYeah: $rememberOThatIdYeah<br><br>rememberOThatAuthorYeah: $rememberOThatAuthorYeah<br><br>cTagAgentRedditorName: $cTagAgentRedditorName";
 				$a->answerer = $rememberOThatAuthorYeah;
 				$ptr = sizeof($allMyDirectChildrenExceptErMe);
-				echo "<br><br> $ptr";
+				//echo "<br><br> $ptr";
 				$allMyDirectChildrenExceptErMe[$ptr] = $a;
 			}
 		}
-	 	//echo "<br><br>parent id: " . $rememberOThatParentIdYee;
+	 	////echo "<br><br>parent id: " . $rememberOThatParentIdYee;
 	}
-	if ($key == "author") { $rememberOThatAuthorYeah = $array['author']; /*echo "<br><br>asdf author: " . $rememberOThatAuthorYeah;*/ }
-	if ($key == "id") { $rememberOThatIdYeah = $array['id']; /*echo "<br><br>asdf id: " . $rememberOThatIdYeah;*/ }
+	if ($key == "author") { $rememberOThatAuthorYeah = $array['author']; /*//echo "<br><br>asdf author: " . $rememberOThatAuthorYeah;*/ }
+	if ($key == "id") { $rememberOThatIdYeah = $array['id']; /*//echo "<br><br>asdf id: " . $rememberOThatIdYeah;*/ }
 	traverseF($obj->$key, $idWaitingToBeMatchedByOneOrMoreParentIds, $cTagAgentRedditorName, $allMyDirectChildrenExceptErMe);
   }
 }

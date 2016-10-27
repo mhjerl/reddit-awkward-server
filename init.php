@@ -879,7 +879,23 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 			$c++;
 		}
 	}
-
+	if (strpos($commentBody, 'reddit.awkward{') !== false) {
+		// Here: Body has awkward tag
+		// Therefore: Allow the reddit.awkward{youre.being.overly.ironic.and.are.violating.the.rules} tag:
+		$tagsAtYourDisposal[$c] = new stdClass();
+		$tagsAtYourDisposal[$c]->cid = $id;
+		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{youre.being.overly.ironic.and.are.violating.the.rules}";
+		$c++;
+	}
+	
+	if (strpos($commentBody, 'reddit.awkward{')             ===            false) {
+		// Here: Author of comment is myself
+		// Therefore: Allow: reddit.awkward{interesting.will.write.more.in.a.few.days.time}
+		$tagsAtYourDisposal[$c] = new stdClass();
+		$tagsAtYourDisposal[$c]->cid = $id;
+		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{interesting.will.write.more.in.a.few.days.time}";
+		$c++;
+	}
 	
 	$tagsAtYourDisposal[$c] = new stdClass();
 	$tagsAtYourDisposal[$c]->cid = $id;
@@ -897,10 +913,7 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 	$tagsAtYourDisposal[$c]->cid = $id;
 	$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}";
 	$c++;
-	$tagsAtYourDisposal[$c] = new stdClass();
-	$tagsAtYourDisposal[$c]->cid = $id;
-	$tagsAtYourDisposal[$c]->tag = "reddit.awkward{youre.being.overly.ironic.and.are.violating.the.rules}";
-	$c++;
+
 
 	$extendedInfoAboutRedditorsOnPage[$d]->tagsAtYourDisposal = $tagsAtYourDisposal;
 

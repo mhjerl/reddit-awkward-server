@@ -251,6 +251,60 @@ VALUES (
     }
 
 
+
+
+	// look for "reddit.awkward{i.am.one.of.the.strangest.people.youll.ever.meet}"
+    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
+        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{i.am.one.of.the.strangest.people.youll.ever.meet}") !== false) {
+			givePKarmaForUseOfTagConditionally("reddit.awkward{i.am.one.of.the.strangest.people.youll.ever.meet}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
+		}
+	}
+
+
+
+	// look for "reddit.awkward{er.hi.what.kind.of.strange.presentation.is.that}"
+    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
+        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{er.hi.what.kind.of.strange.presentation.is.that}") !== false) {
+			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+			if ($mintCommentThatIsNotFromDBButFromTheNet->author === $wantedSecondPersonWithAlleFieldsInHere->author) {
+				// Whoops. Redditor can't say this to himself/herself
+				// Give penalty
+			}
+			else {
+				if (strpos($wantedSecondPersonWithAlleFieldsInHere->body, "reddit.awkward{i.am.one.of.the.strangest.people.youll.ever.meet}") !== false) {
+					givePKarmaForUseOfTagConditionally("reddit.awkward{er.hi.what.kind.of.strange.presentation.is.that}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
+					
+				}
+				else {
+					subtractPKarmaConditionally($mTagAgentRedditorName, "reddit.awkward{interesting.will.write.more.in.a.few.days.time}", $pageid, $idAndRedditorAndMoreDude->id, $subreddit, $pagename, "Tag should only be used in reply to reddit.awkward{i.am.one.of.the.strangest.people.youll.ever.meet}", -5);
+				}
+			}
+			
+			
+		}
+	}
+
+
+
+	// look for "reddit.awkward{watch.me.playing.soccer.with.myself.in.this.video}"
+    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
+        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{watch.me.playing.soccer.with.myself.in.this.video}") !== false) {
+            $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
+			$body = strtolower($mintCommentThatIsNotFromDBButFromTheNet->body);
+			if (strpos($body, "youtube") === false) {
+				// Here: No YouTube links in here
+				// Therefore: Give penalty
+			}
+			else {
+				// Here: Found YouTube word
+				// Therefore: Give tag use award
+				givePKarmaConditionally("reddit.awkward{watch.me.playing.soccer.with.myself.in.this.video}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "For playing soccer!", 100)
+			}
+		}
+	}
+
+
+
 	// look for reddit.awkward{fight.reddit.anonymity}, reddit.awkward{fight.the.reddit.karma.system} or reddit.awkward{fight.reddit.tyranny.of.the.masses}
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if ((strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{fight.reddit.anonymity}') !== false) || (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{fight.the.reddit.karma.system}') !== false) || (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{fight.reddit.tyranny.of.the.masses}') !== false)) {

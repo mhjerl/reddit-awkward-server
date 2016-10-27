@@ -376,8 +376,6 @@ VALUES (
 
 
 
-
-
     // look for "reddit.awkward{youre.being.overly.ironic.and.are.violating.the.rules}"
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{youre.being.overly.ironic.and.are.violating.the.rules}") !== false) {

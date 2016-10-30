@@ -230,6 +230,7 @@ while($row = mysqli_fetch_array($result)) {
 	$rule = $row[9];
 	$subreddit = $row[10];
 	$pagename = $row[11];
+	$tag = $row[12];
 	$gifts[$c]['pageid'] = $pageid;
 	$gifts[$c]['commentid'] = $commentid;
 	$gifts[$c]['when'] = $when;
@@ -239,6 +240,7 @@ while($row = mysqli_fetch_array($result)) {
 	$gifts[$c]['rule'] = $rule;
 	$gifts[$c]['subreddit'] = $subreddit;
 	$gifts[$c]['pagename'] = $pagename;
+	$gifts[$c]['tag'] = $tag;
 	$dt2=date("Y-m-d H:i:s");
   /*
 

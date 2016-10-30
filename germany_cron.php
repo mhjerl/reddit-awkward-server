@@ -59,7 +59,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 	$content = curl_exec($ch);
 	curl_close($ch);
 	$jsonObj = json_decode($content, false);
-	$mainPostId = $jsonObj[0]->data->children[0]->data->id;
+	$mainPostId = $jsonObj->data->children[0]->data->id;
 	//echo "mainPostId: " . $mainPostId;
 
     //1. look for new and altered comment texts
@@ -298,7 +298,7 @@ VALUES (
 			else {
 				// Here: Found YouTube word
 				// Therefore: Give tag use award
-				givePKarmaConditionally("reddit.awkward{watch.me.playing.soccer.with.myself.in.this.video}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "For playing soccer!", 100)
+				givePKarmaConditionally("reddit.awkward{watch.me.playing.soccer.with.myself.in.this.video}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "For playing soccer!", 100);
 			}
 		}
 	}
@@ -779,14 +779,19 @@ VALUES (
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
             givePKarmaForUseOfTagConditionally("reddit.awkward{i.apologize}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
 
+			$commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;
+			preg_match('#\{(.*?)\}#', $commentBody, $match);
+ 			$shortHandTag = $match[1];
+			$tag = "reddit.awkward{" . $shortHandTag . "}";
+
             $idOfParentRedditor = $mintCommentThatIsNotFromDBButFromTheNet->parent_id;
             $angryRedditor = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$idOfParentRedditor]->author;
             $angryRedditorsCommentBody = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$idOfParentRedditor]->body;
             if (((strpos($angryRedditorsCommentBody, 'reddit.awkward{doorslam}') !== false) || (strpos($angryRedditorsCommentBody, 'reddit.awkward{i.will.not.reply.and.expect.apology}') !== false))) {
-                givePKarmaForCorrectUseIApologizeTagConditionally($mTagAgentRedditorName, $angryRedditor, $pageid, $id, $subreddit, $pagename);
+                givePKarmaForCorrectUseIApologizeTagConditionally($mTagAgentRedditorName, $angryRedditor, $pageid, $id, $subreddit, $pagename, $tag);
                 gaveNeededApology($mTagAgentRedditorName, $angryRedditor);
             } else {
-                subtractPKarmaForTagQAbsurdApologyConditionally($mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
+                subtractPKarmaForTagQAbsurdApologyConditionally($mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, $tag);
             }
         }
     }
@@ -799,16 +804,21 @@ VALUES (
             givePKarmaForUseOfTagConditionally("reddit.awkward{no.problem}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
 
             $idOfParentRedditor = $mintCommentThatIsNotFromDBButFromTheNet->parent_id;
+			$commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;
+			preg_match('#\{(.*?)\}#', $commentBody, $match);
+ 			$shortHandTag = $match[1];
+			$tag = "reddit.awkward{" . $shortHandTag . "}";
             $apologizingRedditor = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$idOfParentRedditor]->author;
             $apologizingRedditorsCommentBody = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$idOfParentRedditor]->body;
+			
             if ((strpos($apologizingRedditorsCommentBody, 'reddit.awkward{i.apologize}') !== false) or (strpos($apologizingRedditorsCommentBody, 'reddit.awkward{guarded.apology}') !== false)) {
 				$motivation = "You have received $points for saying \"no problems\" to $apologizingRedditor by using the reddit.awkward{no.problem} tag.";
 				$points = 15;
-                givePKarmaForCorrectUseOfNoProblemosTagConditionally($mTagAgentRedditorName, $apologizingRedditor, $pageid, $id, $subreddit, $pagename, $motivation, $points);
+                givePKarmaForCorrectUseOfNoProblemosTagConditionally($mTagAgentRedditorName, $apologizingRedditor, $pageid, $id, $subreddit, $pagename, $motivation, $points, $tag);
             } else {
 				$points = -15;
 				$motivation = "You have received $points in penalty, because you didn't use directly towards someone who is apologizing.";
-                subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally($mTagAgentRedditorName, $apologizingRedditor, $pageid, $id, $subreddit, $pagename);
+                subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally($mTagAgentRedditorName, $apologizingRedditor, $pageid, $id, $subreddit, $pagename, $tag);
             }
 
         }
@@ -1167,7 +1177,7 @@ function subtractPKarmaConditionally($redditor, $tag, $pid, $cid, $subreddit, $p
  		//echo "<br><br>Awarding $points to $redditor";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally', '$subreddit', '$pagename', '$tag');";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1221,7 +1231,7 @@ function giveRKarmaForUseOfTagConditionally($tag, $redditorFirstPerson, $reddito
 		$motivation = "$redditorFirstPerson and $redditorSecondPerson were both awarded $rKarma in relational karma because $redditorFirstPerson used the tag: $tag";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-$sql = "INSERT INTO  `redditawkward_com`.`prima_relation (`firstperson`, `secondperson`, `whencreated`, `whencreated_utc`, `secondperson_notified`, `whensecondpersonnotified`, `whensecondpersonnotified_utc`, `rkarmaforboth`, `firstperson_commentid`, `firstperson_pageid`, `subreddit`, `motivation`) VALUES ('$redditorFirstPerson',  '$redditorSecondPerson',  '$dt2',  '$t',  'false',  NULL,  '0',  '$rKarma',  '$cid',  '$pid',  '$subreddit',  '$motivation' );";
+$sql = "INSERT INTO  `redditawkward_com`.`prima_relation (`firstperson`, `secondperson`, `whencreated`, `whencreated_utc`, `secondperson_notified`, `whensecondpersonnotified`, `whensecondpersonnotified_utc`, `rkarmaforboth`, `firstperson_commentid`, `firstperson_pageid`, `subreddit`, `motivation`, `tag`) VALUES ('$redditorFirstPerson',  '$redditorSecondPerson',  '$dt2',  '$t',  'false',  NULL,  '0',  '$rKarma',  '$cid',  '$pid',  '$subreddit',  '$motivation' , '$tag');";
 		 mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 
@@ -1241,7 +1251,7 @@ function subtractPKarmaForTagInspiredNotBeingFollowedUpByIMeanItTagInTimeConditi
 		$motivation = "You have received a penalty of $actualPoints because you didn't use the reddit.awkward{no.i.mean.it} tag as a reply to the comment where you used reddit.awkward{your.comment.inspired.me}: §3 Should always be followed by an answer to yourself, within 10 minutes, with a single, stand-alone reddit.awkward{no.i.mean.it} tag.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagInspiredNotBeingFollowedUpByIMeanItTagInTimeConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagInspiredNotBeingFollowedUpByIMeanItTagInTimeConditionally', '$subreddit', '$pagename', 'reddit.awkward{your.comment.inspired.me}');";
 		//echo "<br><br>$sql";
 		 mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1261,7 +1271,7 @@ function subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally
 		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt $tag tagget på et andet horisontalt niveau i diskussionen end som direkte svar på hovedindlægget.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally', '$subreddit', '$pagename', '$tag');";
 		//echo "<br><br>$sql";
 		 mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1281,14 +1291,14 @@ function subtractPKarmaForIDontThinkTheOriginalBlaBlaBlaConditionally($redditor,
 		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt $tag tagget på et andet horisontalt niveau i diskussionen end som direkte svar på hovedindlægget.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForIDontThinkTheOriginalBlaBlaBlaConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForIDontThinkTheOriginalBlaBlaBlaConditionally', '$subreddit', '$pagename', '$tag');";
 		//echo "<br><br>$sql";
 		 mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
 
 
-function givePKarmaForCorrectUseOfNoProblemosTagConditionally($redditorJTagAgent, $apologizingRedditor, $pid, $cid, $subreddit, $pagename, $motivation, $points) {
+function givePKarmaForCorrectUseOfNoProblemosTagConditionally($redditorJTagAgent, $apologizingRedditor, $pid, $cid, $subreddit, $pagename, $motivation, $points, $tag) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditorJTagAgent' AND pageid='$pid' AND commentid='$cid'";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
@@ -1300,14 +1310,14 @@ function givePKarmaForCorrectUseOfNoProblemosTagConditionally($redditorJTagAgent
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditorJTagAgent', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'givePKarmaForCorrectUseOfNoProblemosTagConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditorJTagAgent', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'givePKarmaForCorrectUseOfNoProblemosTagConditionally', '$subreddit', '$pagename', '$tag');";
 		////echo "<br><br>$sql";
 		queryDoorslamAndExpectConditionally($redditorJTagAgent, $apologizingRedditor, $subreddit, $pid, $pagename, "reddit.awkward{no.problem}", $cid, $sql);
 	}
 }
 
 
-function subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally($redditor, $nonApologizingRedditor, $pid, $cid, $subreddit, $pagename, $motivation, $points) {
+function subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally($redditor, $nonApologizingRedditor, $pid, $cid, $subreddit, $pagename, $motivation, $points, $tag) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
 	//echo "<br>$query";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
@@ -1319,7 +1329,7 @@ function subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally($redditor, 
  		//echo "<br><br>Awarding $points to $redditor";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally', '$subreddit', '$pagename', '$tag');";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1328,7 +1338,7 @@ function subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally($redditor, 
 
 
 
-function givePKarmaForCorrectUseIApologizeTagConditionally($redditorJTagAgent, $angryRedditor, $pid, $cid, $subreddit, $pagename) {
+function givePKarmaForCorrectUseIApologizeTagConditionally($redditorJTagAgent, $angryRedditor, $pid, $cid, $subreddit, $pagename, $tag) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditorJTagAgent' AND pageid='$pid' AND commentid='$cid'";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
@@ -1341,14 +1351,14 @@ function givePKarmaForCorrectUseIApologizeTagConditionally($redditorJTagAgent, $
 		$motivation = "Du har fået $actualPoints for at sige undskyld til $angryRedditor ved at bruge reddit.awkward{i.apologize]-tagget.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditorJTagAgent', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'givePKarmaForCorrectUseIApologizeTagConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditorJTagAgent', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'givePKarmaForCorrectUseIApologizeTagConditionally', '$subreddit', '$pagename', '$tag');";
 		////echo "<br><br>$sql";
 		queryDoorslamAndExpectConditionally($redditorJTagAgent, $angryRedditor, $subreddit, $pid, $pagename, "reddit.awkward{i.apologize}", $cid, $sql);
 	}
 }
 
 
-function subtractPKarmaForTagQAbsurdApologyConditionally($redditor, $pid, $cid, $subreddit, $pagename) {
+function subtractPKarmaForTagQAbsurdApologyConditionally($redditor, $pid, $cid, $subreddit, $pagename, $tag) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
 	//echo "<br>$query";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
@@ -1362,33 +1372,12 @@ function subtractPKarmaForTagQAbsurdApologyConditionally($redditor, $pid, $cid, 
 		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har sagt undskyld ved at bruge reddit.awkward{i.apologize]-tagget uden at gøre det overfor en bruger af ¤o eller ¤p-tagget.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagQAbsurdApologyConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagQAbsurdApologyConditionally', '$subreddit', '$pagename', '$tag');";
 		//echo "<br><br>$sql";
 		 mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
 
-
-
-
-function givePKarmaForCorrectUseOfPleaseUseAKTagsFromHereTagConditionally($redditorJTagAgent, $pid, $cid, $subreddit, $pagename) {
-	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditorJTagAgent' AND pageid='$pid' AND commentid='$cid'";
-	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
-	$count3 = mysqli_num_rows($result3);
-	if ($count3 > 0) {
-		//echo "$redditorJTagAgent has already been given a penalty";
-	}
-	else {
-		$actualPoints = 5;
- 		//echo "<br><br>Awarding $actualPoints to $redditorJTagAgent";
-		$motivation = "Du har fået $actualPoints for at bruge ¤j-tagget korrekt til at danne en ubrudt kæde af ¤j-tags.";
-		$dt2=date("Y-m-d H:i:s");
-		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditorJTagAgent', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'givePKarmaForCorrectUseOfPleaseUseAKTagsFromHereTagConditionally', '$subreddit', '$pagename');";
-		//echo "<br><br>$sql";
-		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
-	}
-}
 
 
 function subtractPKarmaForTagJSelfDisciplineViolationConditionally($redditor, $pid, $cid, $subreddit, $pagename) {
@@ -1405,7 +1394,7 @@ function subtractPKarmaForTagJSelfDisciplineViolationConditionally($redditor, $p
 		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har undladt at bruge ¤j-tagget i forgreningerne efter et anvendt ¤j-tag.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagJSelfDisciplineViolationConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagJSelfDisciplineViolationConditionally', '$subreddit', '$pagename', '$tag');";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1424,7 +1413,7 @@ function subtractPKarmaForTagMSelfDisciplineViolationConditionally($redditor, $p
 		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt m-tagget og alligevel blandet dig i diskussionen på kommentar-siden.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagMSelfDisciplineViolationConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagMSelfDisciplineViolationConditionally', '$subreddit', '$pagename', '$tag');";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1443,7 +1432,7 @@ function subtractPKarmaForTagMNotLevel2ViolationConditionally($redditor, $pid, $
 		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt m-tagget på et andet niveau i diskussionen end som direkte svar på hovedindlægget eller linket.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagMNotLevel2ViolationConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForTagMNotLevel2ViolationConditionally', '$subreddit', '$pagename', '$tag');";
 		//echo "<br><br>$sql";
 		 mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1462,7 +1451,7 @@ function givePKarmaConditionally($tag, $redditorWaiting, $pid, $cid, $subreddit,
 		$t = time();
 		$tagFullName = "reddit.awkward{" + $tag + "}";
 		$points = $awkwardKarmaRewards[$tagFullName];
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditorWaiting', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'givePKarmaForUseOfTagConditionally', '$subreddit', '$pagename', 5);";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditorWaiting', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'givePKarmaForUseOfTagConditionally', '$subreddit', '$pagename', 5);";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1483,7 +1472,7 @@ function givePKarmaForUseOfTagConditionally($tag, $redditorWaiting, $pid, $cid, 
 		$t = time();
 		$tagFullName = "reddit.awkward{" + $tag + "}";
 		$points = $awkwardKarmaRewards[$tagFullName];
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditorWaiting', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'givePKarmaForUseOfTagConditionally', '$subreddit', '$pagename', 5);";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditorWaiting', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, '$motivation', 'givePKarmaForUseOfTagConditionally', '$subreddit', '$pagename', 5);";
 		////echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1500,7 +1489,7 @@ function subtractPKarmaForPlainAwkwardTagViolationConditionally($redditor, $pid,
  		//echo "<br><br>Penalty: $actualPoints to $redditor";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForPlainAwkwardTagViolationConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForPlainAwkwardTagViolationConditionally', '$subreddit', '$pagename', '$tag');";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1519,7 +1508,7 @@ function subtractPKarmaForWaitsForYourReplyOnlySelfDisciplineViolationConditiona
 		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt c-tagget og alligevel blandet dig i $intruderRedditor s vrøvl.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForWaitsForYourReplyOnlySelfDisciplineViolationConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'subtractPKarmaForWaitsForYourReplyOnlySelfDisciplineViolationConditionally', '$subreddit', '$pagename', 'reddit.awkward{waits.for.your.reply.only}');";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1533,7 +1522,7 @@ function givePKarmaForWaitsForYourReplyOnlyUnconditionally($kindAnsweringReddito
 	$motivation = "Fordi du var så sød at svare på kommentaren fra $tagCAgentExpectingAnswer som ønskede at specifikt du skulle svare og som ikke engang gad at se på andre svar (hihi!)!";
 	$dt2=date("Y-m-d H:i:s");
 	$t = time();
-	$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$kindAnsweringRedditor', '$pid', '$cid' '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'givePKarmaForWaitsForYourReplyOnlyUnconditionally', '$subreddit', '$pagename');";
+	$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$kindAnsweringRedditor', '$pid', '$cid' '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'givePKarmaForWaitsForYourReplyOnlyUnconditionally', '$subreddit', '$pagename', 'reddit.awkward{waits.for.your.reply.only}');";
 	////echo "<br><br>query: $sql<br><br>";
 	queryDoorslamAndExpectConditionally($tagCAgentExpectingAnswer, $kindAnsweringRedditor, $subreddit, $pid, $pagename, "reddit.awkward{waits.for.your.reply.only}", $cid, $sql);
 
@@ -1557,7 +1546,7 @@ function givePKarmaForTagWaitsForAnyPersonConditionally($kindAnsweringRedditor, 
 		$motivation = "Fordi du var så sød at svare på kommentaren fra $backwiseOriginalPoster!";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$kindAnsweringRedditor', '$pid', '$cid',  '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'givePKarmaForTagWaitsForAnyPersonConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$kindAnsweringRedditor', '$pid', '$cid',  '$dt2', '$t', '$actualPoints', 'false', NULL, '$motivation', 'givePKarmaForTagWaitsForAnyPersonConditionally', '$subreddit', '$pagename', 'reddit.awkward{waits.for.anyone}');";
 		queryDoorslamAndExpectConditionally($backwiseOriginalPoster, $kindAnsweringRedditor, $subreddit, $pid, $pagename, "reddit.awkward{waits.for.anyone}", $cid, $sql);
 		////echo "query: $sql<br><br>";
 	}
@@ -1577,7 +1566,7 @@ function queryDoorslamAndExpectConditionally($firstPerson, $secondPerson, $subre
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$motivation = "You need to apologize to $secondPerson before you should speak to him/her. You used the tag: $tag.";
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`) VALUES ('$firstPerson', '$pageid', '$cid',  '$dt2', '$t', '-5', 'false', NULL, '$motivation', 'givePKarmaForTagWaitsForAnyPersonConditionally', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$firstPerson', '$pageid', '$cid',  '$dt2', '$t', '-5', 'false', NULL, '$motivation', 'givePKarmaForTagWaitsForAnyPersonConditionally', '$subreddit', '$pagename', '$tag');";
 		////echo "query: $sql<br><br>";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}

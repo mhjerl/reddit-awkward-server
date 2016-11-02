@@ -610,9 +610,9 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 	$extendedInfoAboutRedditorsOnPage[$d] = new stdClass();
 	$extendedInfoAboutRedditorsOnPage[$d]->id = $id;
 	$parentId = $mintCommentThatIsNotFromDBButFromTheNet->parent_id;
-	$extendedInfoAboutRedditorsOnPage[$d]->parent_id = $parentId;
-	$extendedInfoAboutRedditorsOnPage[$d]->author = $mintCommentThatIsNotFromDBButFromTheNet->author;
-	$extendedInfoAboutRedditorsOnPage[$d]->body = $mintCommentThatIsNotFromDBButFromTheNet->body;
+	//$extendedInfoAboutRedditorsOnPage[$d]->parent_id = $parentId;
+	//$extendedInfoAboutRedditorsOnPage[$d]->author = $mintCommentThatIsNotFromDBButFromTheNet->author;
+	//$extendedInfoAboutRedditorsOnPage[$d]->body = $mintCommentThatIsNotFromDBButFromTheNet->body;
 	$parentCommentWithAllInfoInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$parentId];
 	$grandParentCommentWithAllInfoInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$parentCommentWithAllInfoInHere->parent_id];
 	$parentRedditorName = $parentCommentWithAllInfoInHere->author;
@@ -621,20 +621,55 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 	$friendRelationStrength = null;
 	$friend = null;
 
+	
+
+
+
+
+
+
+
+
+
+
 	// Enforce general rule §5: Redditors can't direct any tags, besides reddit.awkward{no.i.mean.it} towards their own comments.
 	if ($mintCommentThatIsNotFromDBButFromTheNet->author === $redditor) {
-		break;
+		if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{your.comment.inspired.me}')        ===       false) {
+			$extendedInfoAboutRedditorsOnPage[$d]->tagsAtYourDisposal = null;
+			$d++;
+			continue; // Skip last of the loop structure
+		}
 	}
 
-	for ($c = 0; $c < sizeof($friends); $c++) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/*for ($c = 0; $c < sizeof($friends); $c++) {
 		if ($friends[$c]['friend'] == $parentRedditorName) {
 			$friend = $friends[$c];
 			//echo "<br><br>friend: " . $friend['friend'] . " total: " . $friend['total'] . " parentRedditorName: " . $parentRedditorName . " parentId: " . $parentId;
 			$friendRelationStrength = $friends[$c]['total'];
 			break;
 		}
-	}
-	$extendedInfoAboutRedditorsOnPage[$d]->relationStrength = $friendRelationStrength;
+	}*/
+	//$extendedInfoAboutRedditorsOnPage[$d]->relationStrength = $friendRelationStrength;
 	$tagsAtYourDisposal = Array();
 	$c = 0;
 	$commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;

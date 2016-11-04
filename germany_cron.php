@@ -179,9 +179,9 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 				$sql = "SELECT * FROM prima_tag_use WHERE pageid='$pageid' AND commentid='$id'";
 				$result = mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 				$count = mysqli_num_rows($result);
-				echo "hej";
+				//echo "hej";
 				if ($count == 0) {
-					echo "dav";
+					//echo "dav";
 					$redditor = $mintCommentThatIsNotFromDBButFromTheNet->author;
 					$dt2=date("Y-m-d H:i:s");
 					$t = time();
@@ -197,7 +197,7 @@ $sql = "INSERT INTO  `redditawkward_com`.`prima_tag_use` (
 VALUES (
 '$redditor',  '$pageid',  '$id',  '$subreddit',  '$t',  '$dt2',  '$tag'
 );";
-					echo $sql;
+					//echo $sql;
 					mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 				}
 			}
@@ -396,15 +396,18 @@ VALUES (
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}") !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$appleIds = giveMeTheNamesOfAllApplesOnTheBranchWithThisCommentAsAxePointHmmm($jsonObj, $naughtyOrWellBehavedChild->id);
+			$appleIds = giveMeTheNamesOfAllApplesOnTheBranchWithThisCommentAsAxePointHmmm($jsonObj, $id);
+			//echo "<br>cid: ".$id ;
+			//echo "<br>appleIds size: ". sizeof($appleIds);
 			foreach ($appleIds as $appleId) {
+				$thirdPersonName = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$appleId]->author;
 				if ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$appleId]->author === $mTagAgentRedditorName) {
 					// Here: Tag agaent violated his own rule!
-					// Give penalty
-					subtractPKarmaConditionally($mTagAgentRedditorName, "reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}", $pageid, $id, $subreddit, $pagename, "You previously used reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate} and should therefore not reply or participate in discussions following this tag.", -30);
+					// Give penalty	
+					subtractPKarmaConditionally($thirdPersonName, "reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}", $pageid, $id, $subreddit, $pagename, "You previously used reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate} and should therefore not reply or participate in discussions following this tag.", -30);
 				}
 				else {
-					subtractPKarmaConditionally($mTagAgentRedditorName, "reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}", $pageid, $id, $subreddit, $pagename, "The tag reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate} was used earlier here. You should therefore not reply or participate in discussions following this tag.", -5);
+					subtractPKarmaConditionally($thirdPersonName, "reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}", $pageid, $id, $subreddit, $pagename, "The tag reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate} was used earlier here. You should therefore not reply or participate in discussions following this tag.", -5);
 				}
 			}
 		}
@@ -1043,14 +1046,15 @@ function giveMeTheNamesOfAllApplesOnTheBranchWithThisCommentAsAxePointHmmm($json
 	foreach ($idsOfCommentWhoHasTOneParent as $kkey=>$vvalue) {
 		//echo "<br>kkey: $kkey<br>vvalue->id:$vvalue->id<br>vvalue->parent_id:$vvalue->parent_id";
 		//$idsOfCommentWhoHasTOneParentPointer = i;
-		////echo "<br><br>-----------------idsOfCommentWhoHasTOneParent id: " . $kkey;
+		//echo "<br><br>-----------------idsOfCommentWhoHasTOneParent id: " . $kkey;
 		$r = (isJustALeaf($kkey, $jsonObj));
-		////echo "<br><br>-----------------idsOfCommentWhoHasTOneParent id2: " . $kkey;
-		////echo "<br><br>r:".(string)$r;
+		//echo "<br><br>-----------------idsOfCommentWhoHasTOneParent id2: " . $kkey;
+		//echo "<br><br>r:".(string)$r;
 		if ($r) {
 			//echo "<br><br>pushin";
 			array_push($leafs, $kkey);
 		}
+		
 	}
 	//echo "leaf count: " + sizeof($leafs);
 	foreach ($leafs as $leaf) {
@@ -1091,23 +1095,23 @@ function giveMeTheNamesOfAllApplesOnTheBranchWithThisCommentAsAxePointHmmm($json
 				//echo ".".$branchoDancho[$c];
 				array_push($rightBranches[$rightBranchIndexTookThreeHoursForMeToFindThisBug], $branchoDancho[$c]);
 			}
-			////echo "<br><br>rightBranches*:(" . sizeof($rightBranches[$rightBranchIndexTookThreeHoursForMeToFindThisBug]) . ")";
+			//echo "<br><br>rightBranches*:(" . sizeof($rightBranches[$rightBranchIndexTookThreeHoursForMeToFindThisBug]) . ")";
 			$rightBranchIndexTookThreeHoursForMeToFindThisBug++;
 		}
 	}
-	////echo "<br><br>lizey: " . sizeof($rightBranches);
-	////echo "<br><br>sizey: " . sizeof($rightBranches[0]);
+	//echo "<br><br>lizey: " . sizeof($rightBranches);
+	//echo "<br><br>sizey: " . sizeof($rightBranches[0]);
 	//var_dump($rightBranches);
 	for ($i = 0; $i < sizeof($rightBranches); $i++) {
-		////echo "<br><br>rightBranches:(" . sizeof($rightBranches[$i]) . ")";
+		//echo "<br><br>rightBranches:(" . sizeof($rightBranches[$i]) . ")";
 	}
 	$commentsOnBranch = Array();
 	for ($i = 0; $i < sizeof($rightBranches); $i++) {
 		$foundAxePoint = true;
-		////echo "<br><br>rightBranches:(" . sizeof($rightBranches[$i]) . ")";
+		//echo "<br><br>rightBranches:(" . sizeof($rightBranches[$i]) . ")";
 		for ($b = 0; $b < sizeof($rightBranches[$i]); $b++) {
 			if ($foundAxePoint) {	
-				////echo "#".$rightBranches[$i][$b];
+				//echo "#".$rightBranches[$i][$b];
 				if (!in_array($rightBranches[$i][$b], $commentsOnBranch)) {
 					array_push($commentsOnBranch, $rightBranches[$i][$b]);
 				}
@@ -1143,13 +1147,16 @@ function isJustALeaf($idf, $jsonObj) {
 	//echo "<br><br><br><br>TESTING ID: " . $parentIdToLookFor;
 	$pointedTo = traverseB($jsonObj, $parentIdToLookFor);
 	if ($pointedTo[0]->val === 'yes') {
-		//echo "<br>***************************d******************************"; return false;
+		//echo "<br>***************************d******************************";
+		return false;
 	}
 	else if ($pointedTo[0]->val === 'no') {
-		//echo "<br>ooooooooooooooooooooodooooooooooooooooooooooooooooooooo"; return true;
+		//echo "<br>ooooooooooooooooooooodooooooooooooooooooooooooooooooooo";
+		return true;
 	}
 	else {
-		//echo "<br>###############################d#########################################"; return true;
+		//echo "<br>###############################d#########################################";
+		return true;
 	}
 	//if (!$pointedTo) //echo "NOT LEAF: " . $idf;
 	

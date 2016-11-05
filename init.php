@@ -249,15 +249,15 @@ while($row = mysqli_fetch_array($result)) {
 	P R O D U C T I O N :
 
 */
-
-	$query2 = "UPDATE prima_karmagift SET claimed='true', claimedwhen='$dt2' WHERE redditor='$redditor' AND pageid='$pageid' AND commentid='$commentid';";
+	$t = time();
+	$query2 = "UPDATE prima_karmagift SET claimed='true', claimedwhen='$dt2', claimedwhen_utc='$t' WHERE redditor='$redditor' AND pageid='$pageid' AND commentid='$commentid';";
 	mysqli_query($GLOBALS["___mysqli_ston"], $query2);
 
 
 
 	$query3 = "SELECT * FROM prima_user WHERE redditor='$redditor';";
-	$result3 = mysql_query($query3);
-	$row3 = mysql_fetch_row($result3);
+	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query3);
+	$row3 = mysqli_fetch_row($result3);
 	$currentpkarma = $row3[2];
 	$newpkarma = $currentpkarma + $points;
 	$query4 = "UPDATE prima_user SET points='$newpkarma' WHERE redditor='$redditor';";
@@ -313,16 +313,17 @@ while($row = mysqli_fetch_array($result)) {
 	$commentid = $row[2];
 	$when = $row[3];
 	$utc = $row[4];
-	$points = $row[5];
-	$motivation = $row[7];
-	$tag = $row[8];
-	$rule = $row[9];
-	$subreddit = $row[10];
-	$pagename = $row[11];
+	$claimedwhen_utc = $row[7];
+	$motivation = $row[8];
+	$tag = $row[9];
+	$rule = $row[10];
+	$subreddit = $row[11];
+	$pagename = $row[12];
 	$notifications[$c]['pageid'] = $pageid;
 	$notifications[$c]['commentid'] = $commentid;
 	$notifications[$c]['when'] = $when;
 	$notifications[$c]['utc'] = $utc;
+	$notifications[$c]['claimedwhen_utc'] = $claimedwhen_utc;
 	$notifications[$c]['motivation'] = $motivation;
 	$notifications[$c]['tag'] = $tag;
 	$notifications[$c]['rule'] = $rule;
@@ -339,7 +340,10 @@ while($row = mysqli_fetch_array($result)) {
 
 */
 
-	$query2 = "UPDATE prima_notification SET claimed='true', claimedwhen='$dt2' WHERE redditor='$redditor' AND pageid='$pageid' AND commentid='$commentid';";
+
+
+	$t = time();
+	$query2 = "UPDATE prima_notification SET claimed='true', claimedwhen='$dt2', claimedwhen_utc='$t' WHERE redditor='$redditor' AND pageid='$pageid' AND commentid='$commentid';";
 	mysqli_query($GLOBALS["___mysqli_ston"], $query2);
 
 

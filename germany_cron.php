@@ -51,7 +51,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 	$uri_path = parse_url($pageurl, PHP_URL_PATH);
 	$uri_segments = explode('/', $uri_path);
 	$subreddit = $uri_segments[2];
-	$pagename = $uri_segments[4];
+	$pagename = $uri_segments[5];
 	//echo "subreddit: " . $subreddit . "<br>pagename: " . $pagename . "<br>";
 	$ch = curl_init(stripTrailingSlash($pageurl) . ".json");
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -265,10 +265,12 @@ VALUES (
 	// look for "reddit.awkward{er.hi.what.kind.of.strange.presentation.is.that}"
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{er.hi.what.kind.of.strange.presentation.is.that}") !== false) {
+			$mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
 			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
 			if ($mintCommentThatIsNotFromDBButFromTheNet->author === $wantedSecondPersonWithAlleFieldsInHere->author) {
 				// Whoops. Redditor can't say this to himself/herself
 				// Give penalty
+				subtractPKarmaConditionally($mTagAgentRedditorName, "reddit.awkward{er.hi.what.kind.of.strange.presentation.is.that}", $pageid, $id, $subreddit, $pagename, "Tag should only be used in reply to reddit.awkward{i.am.one.of.the.strangest.people.youll.ever.meet}", -5);
 			}
 			else {
 				if (strpos($wantedSecondPersonWithAlleFieldsInHere->body, "reddit.awkward{i.am.one.of.the.strangest.people.youll.ever.meet}") !== false) {
@@ -276,11 +278,9 @@ VALUES (
 					
 				}
 				else {
-					subtractPKarmaConditionally($mTagAgentRedditorName, "reddit.awkward{interesting.will.write.more.in.a.few.days.time}", $pageid, $idAndRedditorAndMoreDude->id, $subreddit, $pagename, "Tag should only be used in reply to reddit.awkward{i.am.one.of.the.strangest.people.youll.ever.meet}", -5);
+					subtractPKarmaConditionally($mTagAgentRedditorName, "reddit.awkward{er.hi.what.kind.of.strange.presentation.is.that}", $pageid, $idAndRedditorAndMoreDude->id, $subreddit, $pagename, "Tag should only be used in reply to reddit.awkward{i.am.one.of.the.strangest.people.youll.ever.meet}", -5);
 				}
 			}
-			
-			
 		}
 	}
 
@@ -319,25 +319,29 @@ VALUES (
 				if ($idAndRedditorAndMoreDude->id !== $id) {
 					// Here: Found other comment which is a reply to parent comment
 					// Therefore: Check if author is me, i.e. then the comment is maybe valide (if it's within the timespan)
+					//echo "<br>a";
 					if ($idAndRedditorAndMoreDude->author === $mTagAgentRedditorName) {
 						// Here: Found comment by redditor
 						// Therefore: Check if redditor has answered in the appropriate timespan in the branch of the parent comment
+						//echo "<br>b";
 						$timeUTCTagUsed = $mintCommentThatIsNotFromDBButFromTheNet->utc;
 						$timeOfMyReply = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$idAndRedditorAndMoreDude->id]->utc;
 						$hoursGoneBy = (($timeOfMyReply - $timeUTCTagUsed) / (60 * 60));
                         if ($hoursGoneBy < 24) {
 							// Here: Redditor answered too early
 							// Therefore: Give penalty
+							//echo "<br>c";
 							subtractPKarmaConditionally($mTagAgentRedditorName, "reddit.awkward{interesting.will.write.more.in.a.few.days.time}", $pageid, $idAndRedditorAndMoreDude->id, $subreddit, $pagename, "Your answer came within 24 hours. You should have waited a little more.", -5);
-                            $foundValidIMeanItTag = true;
                         } else if ($hoursGoneBy > 24 * 4) {
                             // Here: Expired
                             // Therefore: Give penalty
+							//echo "<br>d";
 							subtractPKarmaConditionally($mTagAgentRedditorName, "reddit.awkward{interesting.will.write.more.in.a.few.days.time}", $pageid, $idAndRedditorAndMoreDude->id, $subreddit, $pagename, "Your came too late.", -5);
                         }
 						else {
 							// Here: Redditor answered correctly
 							// Therefore: Give Awkward Karma gift
+							//echo "<br>e";
 							$answeredCorrectly = true;
 							givePKarmaConditionally("reddit.awkward{interesting.will.write.more.in.a.few.days.time}", $mTagAgentRedditorName, $pageid, $idAndRedditorAndMoreDude->id, $subreddit, $pagename, "You answered " . $wantedSecondPersonWithAlleFieldsInHere . " in time after thinking about the answer for appr. " . floor($hoursGoneBy) . " hours.", +50);
 						}
@@ -347,12 +351,20 @@ VALUES (
 			if (!$answeredCorrectly) {
 				// Here: Redditor didn't answer yet, as he/she said he/she would.
 				// Therefore: Check if the time has run out
+				//echo "<br>f";
 				$timeUTCTagUsed = $mintCommentThatIsNotFromDBButFromTheNet->utc;
 				$hoursGoneBy = ((time() - $timeUTCTagUsed) / (60 * 60));
+				if ($hoursGoneBy < 24) {
+					// Too early
+					// Give penalty
+					//echo "<br>g";
+					subtractPKarmaConditionally($mTagAgentRedditorName, "reddit.awkward{interesting.will.write.more.in.a.few.days.time}", $pageid, $id, $subreddit, $pagename, "You said to " . $wantedSecondPersonWithAlleFieldsInHere->author . " you would answer in a few days time, but you answered within 24 hours.", -100);
+				}
 				if ($hoursGoneBy > 24 * 4) {
 					// Expired
 					// Give penalty
-					subtractPKarmaConditionally($mTagAgentRedditorName, "reddit.awkward{interesting.will.write.more.in.a.few.days.time}", $pageid, $id, $subreddit, $pagename, "You said to " . $wantedSecondPersonWithAlleFieldsInHere->author . " you would answer in a few days time, but you didn't.", -100);
+					//echo "<br>g";
+					subtractPKarmaConditionally($mTagAgentRedditorName, "reddit.awkward{interesting.will.write.more.in.a.few.days.time}", $pageid, $id, $subreddit, $pagename, "You said to " . $wantedSecondPersonWithAlleFieldsInHere->author . " you would answer in a few days time, but you didn\'t.", -100);
 				}
 			}
 		}
@@ -427,7 +439,7 @@ VALUES (
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{doorslam}") !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
             $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            if (needsToApologize($wantedSecondPersonWithAlleFieldsInHere, $mintCommentThatIsNotFromDBButFromTheNet->author)) {
+            if (needsToApologize($wantedSecondPersonWithAlleFieldsInHere->author, $mintCommentThatIsNotFromDBButFromTheNet->author)) {
                 // Here: Doorslam Rule §2 disobeyed: Conflict already begun in the past.
                 // Therefore: Give penalty to this redditor
                 givePKarmaConditionally("reddit.awkward{doorslam}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "You have been given a penalty for using reddit.awkward{doorslam} or reddit.awkward{guarded.apology} more than one time towards the same user before giving him/her a chance to apologize", -300);
@@ -444,7 +456,7 @@ VALUES (
 
                     needApology($culpritName, $mTagAgentRedditorName, $subreddit, $pageid, $id);
 
-                    createNotification($pageid, $id, $culpritName, $subreddit, $pagename, "$mTagAgentRedditorName slammed the door at you. You need to apologize using either reddit.awkward{i.apologize} or reddit.awkward{guarded.apology}.", "mustApologizeIfOtherExpectsIt");
+                    createNotification($pageid, $id, $culpritName, $subreddit, $pagename, "$mTagAgentRedditorName slammed the door at you. You need to apologize using either reddit.awkward{i.apologize} or reddit.awkward{guarded.apology}.", "reddit.awkward{doorslam}", "mustApologizeIfOtherExpectsIt");
                 }
             }
         }
@@ -584,7 +596,7 @@ VALUES (
                     //echo "<br><br>QUERY: $query: $dt2<br><br>";
                     mysqli_query($GLOBALS["___mysqli_ston"], $query);
 
-                    appendToOneOfTheLongestSpeechesIveEverHeard("The answer with id: " . $idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[0]->id . " from the kind redditor: " . $kindAnsweringRedditor . " came so fast the system nearly got flabbergasted!", false);
+                    
                 }
             }
         }
@@ -777,7 +789,7 @@ VALUES (
             $angryRedditorsCommentBody = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$idOfParentRedditor]->body;
             if (((strpos($angryRedditorsCommentBody, 'reddit.awkward{doorslam}') !== false) || (strpos($angryRedditorsCommentBody, 'reddit.awkward{i.will.not.reply.and.expect.apology}') !== false))) {
                 givePKarmaForCorrectUseIApologizeTagConditionally($mTagAgentRedditorName, $angryRedditor, $pageid, $id, $subreddit, $pagename, $tag);
-                gaveNeededApology($mTagAgentRedditorName, $angryRedditor);
+                gaveNeededApology($mTagAgentRedditorName, $angryRedditor, $subreddit, $pageid, $id);
             } else {
                 subtractPKarmaForTagQAbsurdApologyConditionally($mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, $tag);
             }
@@ -805,7 +817,7 @@ VALUES (
                 givePKarmaForCorrectUseOfNoProblemosTagConditionally($mTagAgentRedditorName, $apologizingRedditor, $pageid, $id, $subreddit, $pagename, $motivation, $points, $tag);
             } else {
 				$points = -15;
-				$motivation = "You have received $points in penalty, because you didn't use directly towards someone who is apologizing.";
+				$motivation = "You have received $points in penalty, because you didn\'t use directly towards someone who is apologizing.";
                 subtractPKarmaForTagNoProblemUsedInAnAbsurdWayConditionally($mTagAgentRedditorName, $apologizingRedditor, $pageid, $id, $subreddit, $pagename, $tag);
             }
 
@@ -1086,7 +1098,18 @@ function giveMeTheNamesOfAllApplesOnTheBranchWithThisCommentAsAxePointHmmm($json
 	}
 	//echo "<br><br>lizey: " . sizeof($rightBranches);
 	//echo "<br><br>sizey: " . sizeof($rightBranches[0]);
-	//var_dump($rightBranches);
+
+
+
+
+	echo "<br><br>";
+	var_dump($rightBranches);
+
+
+
+
+
+
 	for ($i = 0; $i < sizeof($rightBranches); $i++) {
 		//echo "<br><br>rightBranches:(" . sizeof($rightBranches[$i]) . ")";
 	}
@@ -1159,23 +1182,25 @@ function isJustALeaf($idf, $jsonObj) {
 
 function subtractPKarmaConditionally($redditor, $tag, $pid, $cid, $subreddit, $pagename, $motivation, $points) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
-	//echo "<br>$query";
+	echo "<br>$query";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
 	if ($count3 > 0) {
+		echo "<br>subtract1";
 		//echo "<br>$redditor has already been given a penalty!";
 	}
 	else {
  		//echo "<br><br>Awarding $points to $redditor";
+		echo "<br>subtract2";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$points', 'false', NULL, NULL, '$motivation', 'subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally', '$subreddit', '$pagename', '$tag');";
-		//echo "<br><br>$sql";
+		echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
 }
 
-function createNotification($pageid, $cid, $redditor, $subreddit, $pagename , $notificationMessage, $tag, $rule) {
+function createNotification($pageid, $cid, $redditor, $subreddit, $pagename, $notificationMessage, $tag, $rule) {
 	$query = "SELECT * FROM prima_notification WHERE redditor='$redditor' AND pageid='$pageid' AND commentid='$cid'";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
@@ -1185,7 +1210,7 @@ function createNotification($pageid, $cid, $redditor, $subreddit, $pagename , $n
 	else {
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, '$notificationMessage', '$tag', '$rule', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, NULL, '$notificationMessage', '$tag', '$rule', '$subreddit', '$pagename');";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1202,10 +1227,10 @@ function createNeedToApologizeBeforeChattingNotificationForBothFirstAndSecondPer
 		$notification = "Redditor $needsToApologizeRedditorName needs to apologize with reddit.awkward{i.apologize} $angryPersonRedditorName or reddit.awkward{guarded.apology} for this incidence: http://  before they should engage in direct conversation! No relational karma or Awkward Karma has been subtracted from either of you. Thanks.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$needsToApologizeRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, '$notification', 'reddit.awkward{i.apologize}' 'commentatorExpectsAnswerFrom', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$needsToApologizeRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, NULL, '$notification', 'reddit.awkward{i.apologize}' 'commentatorExpectsAnswerFrom', '$subreddit', '$pagename');";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
-		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$angryPersonRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, '$notification', 'reddit.awkward{i.apologize}' 'shouldApologizeBeforeChatting', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$angryPersonRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, NULL, '$notification', 'reddit.awkward{i.apologize}' 'shouldApologizeBeforeChatting', '$subreddit', '$pagename');";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1240,7 +1265,7 @@ function subtractPKarmaForTagInspiredNotBeingFollowedUpByIMeanItTagInTimeConditi
 	else {
 		$actualPoints = -10;
  		//echo "<br><br>Awarding $actualPoints to $redditor";
-		$motivation = "You have received a penalty of $actualPoints because you didn't use the reddit.awkward{no.i.mean.it} tag as a reply to the comment where you used reddit.awkward{your.comment.inspired.me}: §3 Should always be followed by an answer to yourself, within 10 minutes, with a single, stand-alone reddit.awkward{no.i.mean.it} tag.";
+		$motivation = "You have received a penalty of $actualPoints because you didn\'t use the reddit.awkward{no.i.mean.it} tag as a reply to the comment where you used reddit.awkward{your.comment.inspired.me}: §3 Should always be followed by an answer to yourself, within 10 minutes, with a single, stand-alone reddit.awkward{no.i.mean.it} tag.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, NULL, '$motivation', 'subtractPKarmaForTagInspiredNotBeingFollowedUpByIMeanItTagInTimeConditionally', '$subreddit', '$pagename', 'reddit.awkward{your.comment.inspired.me}');";
@@ -1590,7 +1615,7 @@ function createCTagNotificationForSecondPerson($pageid, $cid, $wantedAnswerersRe
 		$notification = "Redditoren $cursoryRedditorWaiting afventer svar direkte fra dig. Klik på linket yderst til højre for at se $cursoryRedditorWaiting-s kommentar!";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$wantedAnswerersRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, '$notification', 'reddit.awkward{waits.for.your.reply.only}', 'commentatorExpectsAnswerFrom', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$wantedAnswerersRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, NULL, '$notification', 'reddit.awkward{waits.for.your.reply.only}', 'commentatorExpectsAnswerFrom', '$subreddit', '$pagename');";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1614,15 +1639,6 @@ function anybodyOutThereWhoHasMeAsParentHeAskedKnowinglyNoActuallyINeedTheOLDEST
 
 
 
-function appendToOneOfTheLongestSpeechesIveEverHeard($str, $printNowQuestionMark, &$strArray = array()) {
-	static $strArray, $c;
-	$strArray[$c++]=$str;
-	if ($printNowQuestionMark) {
-		//echo "<br><br><br>ANNUAL REPORT OF VERY BAD JOKES:<br><br><br>";
-		var_dump($strArray);
-		//echo "END OF ANNUAL REPORT OF VERY BAD JOKES:<br><br><br>";
-	}
-}
 
 
 

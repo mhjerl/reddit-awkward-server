@@ -305,21 +305,6 @@ VALUES (
 
 
 
-	// look for reddit.awkward{fight.reddit.anonymity}, reddit.awkward{fight.the.reddit.karma.system} or reddit.awkward{fight.reddit.tyranny.of.the.masses}
-    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
-        if ((strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{fight.reddit.anonymity}') !== false) || (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{fight.the.reddit.karma.system}') !== false) || (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{fight.reddit.tyranny.of.the.masses}') !== false)) {
-            $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;
-			// Strip text between {}
-            preg_match('#\{(.*?)\}#', $commentBody, $match);
-            $shortHandTag = $match[1];
-            $tag = "reddit.awkward{" . $shortHandTag . "}";
-            givePKarmaForUseOfTagConditionally(tag, $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename);
-		}
-	}
-
-
-
 
 
 	// look for "reddit.awkward{interesting.will.write.more.in.a.few.days.time}"

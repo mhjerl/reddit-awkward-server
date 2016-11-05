@@ -248,10 +248,10 @@ while($row = mysqli_fetch_array($result)) {
 
 	P R O D U C T I O N :
 
-
+*/
 
 	$query2 = "UPDATE prima_karmagift SET claimed='true', claimedwhen='$dt2' WHERE redditor='$redditor' AND pageid='$pageid' AND commentid='$commentid';";
-	mysql_query($query2);
+	mysqli_query($GLOBALS["___mysqli_ston"], $query2);
 
 
 
@@ -261,13 +261,9 @@ while($row = mysqli_fetch_array($result)) {
 	$currentpkarma = $row3[2];
 	$newpkarma = $currentpkarma + $points;
 	$query4 = "UPDATE prima_user SET points='$newpkarma' WHERE redditor='$redditor';";
-	mysql_query($query4);
+	mysqli_query($GLOBALS["___mysqli_ston"], $query4);
 
 
-
-
-
-*/
 
   $c++;
 }
@@ -340,11 +336,13 @@ while($row = mysqli_fetch_array($result)) {
 	P R O D U C T I O N :
 
 
-	$query2 = "UPDATE prima_notification SET claimed='true', claimedwhen='$dt2' WHERE redditor='$redditor' AND pageid='$pageid' AND commentid='$commentid';";
-	mysql_query($query2);
-
 
 */
+
+	$query2 = "UPDATE prima_notification SET claimed='true', claimedwhen='$dt2' WHERE redditor='$redditor' AND pageid='$pageid' AND commentid='$commentid';";
+	mysqli_query($GLOBALS["___mysqli_ston"], $query2);
+
+
 
   $c++;
 }
@@ -743,19 +741,6 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.dont.think.the.original.post.has.been.treated.respectfully}";
 		$c++;
 
-
-		$tagsAtYourDisposal[$c] = new stdClass();
-		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{fight.reddit.anonymity}";
-		$c++;
-		$tagsAtYourDisposal[$c] = new stdClass();
-		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{fight.the.reddit.karma.system}";
-		$c++;
-		$tagsAtYourDisposal[$c] = new stdClass();
-		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{fight.reddit.tyranny.of.the.masses}";
-		$c++;
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
 		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{watch.me.playing.soccer.with.myself.in.this.video}";

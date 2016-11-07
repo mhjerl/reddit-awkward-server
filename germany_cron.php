@@ -127,7 +127,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 
     
 
-    // Enforce general rule §1: No more than one tag on the same level of the comment tree, i.e. as an answer to a given comment.
+    // Enforce general rule §1:No more than one tag by the same redditor on the same level of the comment tree, i.e. as answer to any given comment.
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{") !== false) {
             $redditorInAllThisMess = $mintCommentThatIsNotFromDBButFromTheNet->author;
@@ -404,7 +404,7 @@ VALUES (
 					subtractPKarmaConditionally($thirdPersonName, "reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}", $pageid, $id, $subreddit, $pagename, "You previously used reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate} and should therefore not reply or participate in discussions following this tag.", -30);
 				}
 				else {
-					subtractPKarmaConditionally($thirdPersonName, "reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}", $pageid, $id, $subreddit, $pagename, "The tag reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate} was used earlier here. You should therefore not reply or participate in discussions following this tag.", -5);
+					subtractPKarmaConditionally($thirdPersonName, "reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}", $pageid, $id, $subreddit, $pagename, "This was used earlier here. You should therefore not reply or participate in discussions following this tag.", -5);
 				}
 			}
 		}
@@ -427,36 +427,44 @@ VALUES (
                 preg_match('#\{(.*?)\}#', $commentBody, $match);
                 $shortHandTag = $match[1];
                 $tag = "reddit.awkward{" . $shortHandTag . "}";
-				subtractPKarmaConditionally($redditorInAllThisMess, $tag, $pageid, $id, $subreddit, $pagename, "You misused the tag " . $tag . ". It should be directed against 'an overbearing act' i.e. either towards reddit.awkward{no.problem}, reddit.awkward{dont.mind.its.ok.lets.move.on} or reddit.awkward{its.fine.i.consider.the.case.closed}.", -5);
+				subtractPKarmaConditionally($redditorInAllThisMess, $tag, $pageid, $id, $subreddit, $pagename, "You misused this tag. It should be directed against 'an overbearing act' i.e. either towards reddit.awkward{no.problem}, reddit.awkward{dont.mind.its.ok.lets.move.on} or reddit.awkward{its.fine.i.consider.the.case.closed}.", -5);
 			}
 		}
 	}
 
-
-
-    // look for "reddit.awkward{doorslam}"
+	
+    // look for "reddit.awkward{i.will.not.reply.and.expect.apology}"
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
-        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{doorslam}") !== false) {
+        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{i.will.not.reply.and.expect.apology}") !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
             $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
             if (needsToApologize($wantedSecondPersonWithAlleFieldsInHere->author, $mintCommentThatIsNotFromDBButFromTheNet->author)) {
-                // Here: Doorslam Rule §2 disobeyed: Conflict already begun in the past.
+                // Here: Rule §2 disobeyed: Conflict already begun in the past.
                 // Therefore: Give penalty to this redditor
-                givePKarmaConditionally("reddit.awkward{doorslam}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "You have been given a penalty for using reddit.awkward{doorslam} or reddit.awkward{guarded.apology} more than one time towards the same user before giving him/her a chance to apologize", -300);
+                givePKarmaConditionally("reddit.awkward{i.will.not.reply.and.expect.apology}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "You have been given a penalty for using reddit.awkward{guarded.apology} more than one time towards the same user before giving him/her a chance to apologize", -300);
             } else {
-                // Here: Redditor didn't use reddit.awkward{doorslam} or reddit.awkward{i.will.not.reply.and.expect.apology} towards second person without getting an apology. (Doorslam Rule §1)
-                // Therefore: Check if redditor obeys Doorslam Rule §2
+                // Here: Redditor didn't use reddit.awkward{i.will.not.reply.and.expect.apology} towards second person (without getting an apology). (Rule §1)
+                // Therefore: Check if redditor obeys Rule §2
                 if (strpos($wantedSecondPersonWithAlleFieldsInHere->body, "reddit.awkward{") !== false) {
-                    // Here: Redditor is replying to a comment with at least one Awkward Tag, violating Doorslam Rule §2
+                    // Here: Redditor is replying to a comment with at least one Awkward Tag, violating Rule §2
                     // Therefore: Give penalty.
-                    givePKarmaConditionally("reddit.awkward{doorslam}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "You have been given a penalty for replying with reddit.awkward{doorslam} to a comment with at least one Awkward tag. (Doorslam Rule §1)", -10);
+                    givePKarmaConditionally("reddit.awkward{i.will.not.reply.and.expect.apology}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "You have been given a penalty for replying with reddit.awkward{i.will.not.reply.and.expect.apology} to a comment with at least one Awkward tag. (Rule §1)", -10);
                 } else {
                     $idOfParentRedditor = $mintCommentThatIsNotFromDBButFromTheNet->parent_id;
                     $culpritName = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$idOfParentRedditor]->author;
 
                     needApology($culpritName, $mTagAgentRedditorName, $subreddit, $pageid, $id);
 
-                    createNotification($pageid, $id, $culpritName, $subreddit, $pagename, "$mTagAgentRedditorName slammed the door at you. You need to apologize using either reddit.awkward{i.apologize} or reddit.awkward{guarded.apology}.", "reddit.awkward{doorslam}", "mustApologizeIfOtherExpectsIt");
+                    createNotification($pageid, $id, $culpritName, $subreddit, $pagename, "$mTagAgentRedditorName slammed the door at you. You need to apologize using either reddit.awkward{i.apologize} or reddit.awkward{guarded.apology}.", "reddit.awkward{i.will.not.reply.and.expect.apology}", "mustApologizeIfOtherExpectsIt");
+                }
+            }
+			$appleIds = giveMeTheNamesOfAllApplesOnTheBranchWithThisCommentAsAxePointHmmm($jsonObj, $id);
+            foreach ($appleIds as $appleId) {
+                //echo "<br>appleId: $appleId  author:" . $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$appleId]->author;
+                if ($mTagAgentRedditorName !== $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$appleId]->author && $wantedSecondPersonWithAlleFieldsInHere->author !== $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$appleId]->author) {
+                    // Here: §5 No third person must answer this comment (Penalty: -10)
+                    // Give penalty
+                    subtractPKarmaConditionally($mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$appleId]->author, "reddit.awkward{i.will.not.reply.and.expect.apology}", $pageid, $appleId, $subreddit, $pagename, "You should not intrude in a bilateral conflict.", -5);
                 }
             }
         }
@@ -467,7 +475,7 @@ VALUES (
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{youre.welcome}") !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
             $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaConditionally("reddit.awkward{youre.welcome}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using the tag: reddit.awkward{youre.welcome}", 10);
+            givePKarmaConditionally("reddit.awkward{youre.welcome}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using this tag.", 10);
             givePKarmaConditionally("reddit.awkward{youre.welcome}", $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $wantedSecondPersonWithAlleFieldsInHere->id, $subreddit, $pagename, "You received Awkward Karma because $mTagAgentRedditorName is polite against you.", 5);
         }
     }
@@ -477,7 +485,7 @@ VALUES (
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{thanks}") !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
             $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaConditionally("reddit.awkward{thanks}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using the tag: reddit.awkward{thanks}", 10);
+            givePKarmaConditionally("reddit.awkward{thanks}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using this tag.", 10);
             givePKarmaConditionally("reddit.awkward{thanks}", $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $wantedSecondPersonWithAlleFieldsInHere->id, $subreddit, $pagename, "You received Awkward Karma because $mTagAgentRedditorName is thankful towards you.", 5);
         }
     }
@@ -488,7 +496,7 @@ VALUES (
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{i.am.glad.you.said.that.to.me}") !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
             $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaConditionally("reddit.awkward{i.am.glad.you.said.that.to.me}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using the tag: reddit.awkward{i.am.glad.you.said.that.to.me}", 10);
+            givePKarmaConditionally("reddit.awkward{i.am.glad.you.said.that.to.me}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using this tag.", 10);
             givePKarmaConditionally("reddit.awkward{i.am.glad.you.said.that.to.me}", $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You received Awkward Karma because $mTagAgentRedditorName was glad of the inspiration you gave him/her!", 5);
         }
     }
@@ -710,7 +718,7 @@ VALUES (
                     $anotherCommentsAuthor = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$kkey]->author;
                     ////echo "<br><br>mTagAgentRedditorName: $mTagAgentRedditorName<br>mTagAgentRedditorName: $anotherCommentsAuthor";
                     if ($anotherCommentsAuthor === $mTagAgentRedditorName) {
-                        subtractPKarmaForTagMSelfDisciplineViolationConditionally($mTagAgentRedditorName, $pageid, $kkey, $subreddit, $pagename);
+                        subtractPKarmaForSelfDisciplineViolationConditionally($mTagAgentRedditorName, $pageid, $kkey, $subreddit, $pagename, "reddit.awkward{i.find.the.subject.unworthy.for.discussion}");
                     }
                 }
             }
@@ -745,7 +753,7 @@ VALUES (
                     $anotherCommentsAuthor = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$kkey]->author;
                     ////echo "<br><br>mTagAgentRedditorName: $mTagAgentRedditorName<br>mTagAgentRedditorName: $anotherCommentsAuthor";
                     if ($anotherCommentsAuthor === $mTagAgentRedditorName) {
-                        subtractPKarmaForTagMSelfDisciplineViolationConditionally($mTagAgentRedditorName, $pageid, $kkey, $subreddit, $pagename);
+                        subtractPKarmaForSelfDisciplineViolationConditionally($mTagAgentRedditorName, $pageid, $kkey, $subreddit, $pagename, "reddit.awkward{i.find.the.subject.unworthy.for.discussion}");
                     }
                 }
             }
@@ -766,7 +774,7 @@ VALUES (
 
             needApology($culprit, $mTagAgentRedditorName, $subreddit, $pageid, $id);
 
-            createNotification($pageid, $id, $culprit, $subreddit, $pagename, "You need to apologize to $mTagAgentRedditorName.", "mustApologizeIfOtherExpectsIt");
+            createNotification($pageid, $id, $culprit, $subreddit, $pagename, "You need to apologize to $mTagAgentRedditorName.", "reddit.awkward{i.will.not.reply.and.expect.apology}", "mustApologizeIfOtherExpectsIt");
 
         }
     }
@@ -787,7 +795,7 @@ VALUES (
             $idOfParentRedditor = $mintCommentThatIsNotFromDBButFromTheNet->parent_id;
             $angryRedditor = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$idOfParentRedditor]->author;
             $angryRedditorsCommentBody = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$idOfParentRedditor]->body;
-            if (((strpos($angryRedditorsCommentBody, 'reddit.awkward{doorslam}') !== false) || (strpos($angryRedditorsCommentBody, 'reddit.awkward{i.will.not.reply.and.expect.apology}') !== false))) {
+            if (strpos($angryRedditorsCommentBody, 'reddit.awkward{i.will.not.reply.and.expect.apology}') !== false) {
                 givePKarmaForCorrectUseIApologizeTagConditionally($mTagAgentRedditorName, $angryRedditor, $pageid, $id, $subreddit, $pagename, $tag);
                 gaveNeededApology($mTagAgentRedditorName, $angryRedditor, $subreddit, $pageid, $id);
             } else {
@@ -812,7 +820,7 @@ VALUES (
             $apologizingRedditorsCommentBody = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$idOfParentRedditor]->body;
 			
             if ((strpos($apologizingRedditorsCommentBody, 'reddit.awkward{i.apologize}') !== false) or (strpos($apologizingRedditorsCommentBody, 'reddit.awkward{guarded.apology}') !== false)) {
-				$motivation = "You have received $points for saying \"no problems\" to $apologizingRedditor by using the reddit.awkward{no.problem} tag.";
+				$motivation = "You have received $points for saying \"no problems\" to $apologizingRedditor by using this tag.";
 				$points = 15;
                 givePKarmaForCorrectUseOfNoProblemosTagConditionally($mTagAgentRedditorName, $apologizingRedditor, $pageid, $id, $subreddit, $pagename, $motivation, $points, $tag);
             } else {
@@ -950,14 +958,16 @@ function needsToApologize($hypotheticallyApologizerRedditor, $hypotheticallyAndH
 }
 
 function gaveNeededApology($apologizerRedditor, $angryRedditor, $subreddit, $pageid, $cid) {
+	$dt2=date("Y-m-d H:i:s");
 	$t = time();
-	$sql = "UPDATE prima_needed_apology SET has_apologized='true', apologized_when='$t', conflict_ended_subreddit='$subreddit', conflict_ended_pageid='$pageid', conflict_ended_commentid='$cid' WHERE has_apologized='false' AND angry_redditor='$angryRedditor' AND need_to_apol_redditor='$apologizerRedditor';";
+	$sql = "UPDATE prima_needed_apology SET has_apologized='true', apologized_when='$dt2', apologized_when_utc='$t', conflict_ended_subreddit='$subreddit', conflict_ended_pageid='$pageid', conflict_ended_commentid='$cid' WHERE has_apologized='false' AND angry_redditor='$angryRedditor' AND need_to_apol_redditor='$apologizerRedditor';";
 	mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 }
 
 function needApology($needToApologizeRedditor, $angryRedditor, $subreddit, $pageid, $cid) {
+	$dt2=date("Y-m-d H:i:s");
 	$t = time();
-	$sql = "INSERT INTO `redditawkward_com`.`prima_needed_apology` (`angry_redditor`, `need_to_apol_redditor`, `created_when_by_doorslam_or_expect_utc`, `conflict_started_subreddit`, `conflict_started_pageid`, `conflict_started_commentid`, `has_apologized`, `apologized_when`, `conflict_ended_subreddit`, `conflict_ended_pageid`, `conflict_ended_commentid`) VALUES ('$angryRedditor', '$needToApologizeRedditor', '$t', '$subreddit', '$pageid', '$cid', 'false', NULL, NULL, NULL, NULL);";
+	$sql = "INSERT INTO `redditawkward_com`.`prima_needed_apology` (`angry_redditor`, `need_to_apol_redditor`, `created_when_by_doorslam_or_expect`, `created_when_by_doorslam_or_expect_utc`, `conflict_started_subreddit`, `conflict_started_pageid`, `conflict_started_commentid`, `has_apologized`, `apologized_when`, `apologized_when_utc`, `conflict_ended_subreddit`, `conflict_ended_pageid`, `conflict_ended_commentid`) VALUES ('$angryRedditor', '$needToApologizeRedditor', $dt2, '$t', '$subreddit', '$pageid', '$cid', 'false', NULL, NULL, NULL, NULL, NULL);";
 	mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 }
 
@@ -1245,7 +1255,7 @@ function giveRKarmaForUseOfTagConditionally($tag, $redditorFirstPerson, $reddito
 	}
 	else {
  		//echo "<br><br>Awarding $rKarma in relational karma to firstperson: $redditorFirstPerson and secondperson: $redditorSecondPerson";
-		$motivation = "$redditorFirstPerson and $redditorSecondPerson were both awarded $rKarma in relational karma because $redditorFirstPerson used the tag: $tag";
+		$motivation = "$redditorFirstPerson and $redditorSecondPerson were both awarded $rKarma in relational karma because $redditorFirstPerson used this tag.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 $sql = "INSERT INTO  `redditawkward_com`.`prima_relation (`firstperson`, `secondperson`, `whencreated`, `whencreated_utc`, `secondperson_notified`, `whensecondpersonnotified`, `whensecondpersonnotified_utc`, `rkarmaforboth`, `firstperson_commentid`, `firstperson_pageid`, `subreddit`, `motivation`, `tag`) VALUES ('$redditorFirstPerson',  '$redditorSecondPerson',  '$dt2',  '$t',  'false',  NULL,  '0',  '$rKarma',  '$cid',  '$pid',  '$subreddit',  '$motivation' , '$tag');";
@@ -1285,7 +1295,7 @@ function subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally
 	else {
 		$actualPoints = -10;
  		//echo "<br><br>Awarding $actualPoints to $redditor";
-		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt $tag tagget på et andet horisontalt niveau i diskussionen end som direkte svar på hovedindlægget.";
+		$motivation = "You have received a penalty of $actualPoints because you used $tag as a an answer to a comment and not the original post or link.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, NULL, '$motivation', 'subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally', '$subreddit', '$pagename', '$tag');";
@@ -1305,7 +1315,7 @@ function subtractPKarmaForIDontThinkTheOriginalBlaBlaBlaConditionally($redditor,
 	else {
 		$actualPoints = -10;
  		//echo "<br><br>Awarding $actualPoints to $redditor";
-		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt $tag tagget på et andet horisontalt niveau i diskussionen end som direkte svar på hovedindlægget.";
+		$motivation = "You have received a penalty of $actualPoints because you used $tag as a an answer to a comment and not the original post or link.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, NULL, '$motivation', 'subtractPKarmaForIDontThinkTheOriginalBlaBlaBlaConditionally', '$subreddit', '$pagename', '$tag');";
@@ -1365,7 +1375,7 @@ function givePKarmaForCorrectUseIApologizeTagConditionally($redditorJTagAgent, $
 	else {
 		$actualPoints = 15;
  		//echo "<br><br>Awarding $actualPoints to $redditorJTagAgent";
-		$motivation = "Du har fået $actualPoints for at sige undskyld til $angryRedditor ved at bruge reddit.awkward{i.apologize]-tagget.";
+		$motivation = "You have received $actualPoints for apologizing to $angryRedditor by using this tag.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditorJTagAgent', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, NULL,  '$motivation', 'givePKarmaForCorrectUseIApologizeTagConditionally', '$subreddit', '$pagename', '$tag');";
@@ -1386,7 +1396,7 @@ function subtractPKarmaForTagQAbsurdApologyConditionally($redditor, $pid, $cid, 
 	else {
 		$actualPoints = -10;
  		//echo "<br><br>Awarding $actualPoints to $redditor";
-		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har sagt undskyld ved at bruge reddit.awkward{i.apologize]-tagget uden at gøre det overfor en bruger af ¤o eller ¤p-tagget.";
+		$motivation = "You have received a penalty of $actualPoints, because you have apologized without using it directly.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, NULL, '$motivation', 'subtractPKarmaForTagQAbsurdApologyConditionally', '$subreddit', '$pagename', '$tag');";
@@ -1396,28 +1406,7 @@ function subtractPKarmaForTagQAbsurdApologyConditionally($redditor, $pid, $cid, 
 }
 
 
-
-function subtractPKarmaForTagJSelfDisciplineViolationConditionally($redditor, $pid, $cid, $subreddit, $pagename) {
-	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
-	//echo "<br>$query";
-	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
-	$count3 = mysqli_num_rows($result3);
-	if ($count3 > 0) {
-		//echo "<br>$redditor has already been given a penalty";
-	}
-	else {
-		$actualPoints = -10;
- 		//echo "<br><br>Awarding $actualPoints to $redditor";
-		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har undladt at bruge ¤j-tagget i forgreningerne efter et anvendt ¤j-tag.";
-		$dt2=date("Y-m-d H:i:s");
-		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, NULL, '$motivation', 'subtractPKarmaForTagJSelfDisciplineViolationConditionally', '$subreddit', '$pagename', '$tag');";
-		//echo "<br><br>$sql";
-		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
-	}
-}
-
-function subtractPKarmaForTagMSelfDisciplineViolationConditionally($redditor, $pid, $cid, $subreddit, $pagename) {
+function subtractPKarmaForSelfDisciplineViolationConditionally($redditor, $pid, $cid, $subreddit, $pagename, $tag) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
 	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 	$count3 = mysqli_num_rows($result3);
@@ -1427,10 +1416,10 @@ function subtractPKarmaForTagMSelfDisciplineViolationConditionally($redditor, $p
 	else {
 		$actualPoints = -10;
  		//echo "<br><br>Awarding $actualPoints to $redditor";
-		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt m-tagget og alligevel blandet dig i diskussionen på kommentar-siden.";
+		$motivation = "You have received a penalty of $actualPoints, because you used this tag and took part in the discussion despite this.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, NULL, '$motivation', 'subtractPKarmaForTagMSelfDisciplineViolationConditionally', '$subreddit', '$pagename', '$tag');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, NULL, '$motivation', 'subtractPKarmaForSelfDisciplineViolationConditionally', '$subreddit', '$pagename', '$tag');";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1446,7 +1435,7 @@ function subtractPKarmaForTagMNotLevel2ViolationConditionally($redditor, $pid, $
 	else {
 		$actualPoints = -10;
  		//echo "<br><br>Awarding $actualPoints to $redditor";
-		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt m-tagget på et andet niveau i diskussionen end som direkte svar på hovedindlægget eller linket.";
+		$motivation = "You have received a penalty of $actualPoints because you used $tag as a an answer to a comment and not the original post or link.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, NULL, '$motivation', 'subtractPKarmaForTagMNotLevel2ViolationConditionally', '$subreddit', '$pagename', '$tag');";
@@ -1484,7 +1473,7 @@ function givePKarmaForUseOfTagConditionally($tag, $redditorWaiting, $pid, $cid, 
 	else {
         $points = 5;
  		//echo "<br><br>Awarding $points to $redditorWaiting";
-		$motivation = "You have received $points for using the $tag tag.";
+		$motivation = "You have received $points for using this tag.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$tagFullName = "reddit.awkward{" + $tag + "}";
@@ -1522,7 +1511,7 @@ function subtractPKarmaForWaitsForYourReplyOnlySelfDisciplineViolationConditiona
 	else {
 		$actualPoints = -10;
  		//echo "<br><br>Awarding $actualPoints to $redditor";
-		$motivation = "Du har fået $actualPoints i straf p-karma, fordi du har brugt c-tagget og alligevel blandet dig i $intruderRedditor s vrøvl.";
+		$motivation = "You have received a penalty of $actualPoints because you used tag and got into the following discussion despite this.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, NULL, '$motivation', 'subtractPKarmaForWaitsForYourReplyOnlySelfDisciplineViolationConditionally', '$subreddit', '$pagename', 'reddit.awkward{waits.for.your.reply.only}');";
@@ -1536,7 +1525,7 @@ function givePKarmaForWaitsForYourReplyOnlyUnconditionally($kindAnsweringReddito
 	$wildestDreamPoints = ( (time() - $utc) / (60*10));
 	$actualPoints = 10;
  	//echo "<br><br>Awarding $actualPoints to $kindAnsweringRedditor";
-	$motivation = "Fordi du var så sød at svare på kommentaren fra $tagCAgentExpectingAnswer som ønskede at specifikt du skulle svare og som ikke engang gad at se på andre svar (hihi!)!";
+	$motivation = "Because you were nice and replied to the comment from $tagCAgentExpectingAnswer who specifically wanted you to answer.";
 	$dt2=date("Y-m-d H:i:s");
 	$t = time();
 	$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$kindAnsweringRedditor', '$pid', '$cid' '$dt2', '$t', '$actualPoints', 'false', NULL, NULL, '$motivation', 'givePKarmaForWaitsForYourReplyOnlyUnconditionally', '$subreddit', '$pagename', 'reddit.awkward{waits.for.your.reply.only}');";
@@ -1560,7 +1549,7 @@ function givePKarmaForTagWaitsForAnyPersonConditionally($kindAnsweringRedditor, 
 		if ($actualPoints < 5) $actualPoints = 5;
 		if ($actualPoints > 20) $actualPoints = 20;
 	 	//echo "Awarding $actualPoints to $kindAnsweringRedditor";
-		$motivation = "Fordi du var så sød at svare på kommentaren fra $backwiseOriginalPoster!";
+		$motivation = "Because you were nice in replying to the comment written by $backwiseOriginalPoster!";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$kindAnsweringRedditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, NULL, '$motivation', 'givePKarmaForTagWaitsForAnyPersonConditionally', '$subreddit', '$pagename', 'reddit.awkward{waits.for.anyone}');";
@@ -1582,7 +1571,7 @@ function queryDoorslamAndExpectConditionally($firstPerson, $secondPerson, $subre
 		$flagged = true;
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$motivation = "You need to apologize to $secondPerson before you should speak to him/her. You used the tag: $tag.";
+		$motivation = "You need to apologize to $secondPerson before you should speak to him/her.";
 		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`) VALUES ('$firstPerson', '$pageid', '$cid',  '$dt2', '$t', '-5', 'false', NULL, NULL, '$motivation', 'givePKarmaForTagWaitsForAnyPersonConditionally', '$subreddit', '$pagename', '$tag');";
 		////echo "query: $sql<br><br>";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
@@ -1591,8 +1580,8 @@ function queryDoorslamAndExpectConditionally($firstPerson, $secondPerson, $subre
 		$flagged = true;
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$notificationMessage = "$secondPerson needs to apologize to  before he/she should speak to you. He/she used the tag: $tag. ";
-		$rule = "General Rules: §4 Redditors shouldn't talk to each other after A has used either reddit.awkward{i.will.not.reply.and.expect.apology} or reddit.awkward{doorslam}. When A has apologized they can talk to each other again.";
+		$notificationMessage = "$secondPerson needs to apologize to  before he/she should speak to you.";
+		$rule = "General Rules: §4 Redditors shouldn't talk to each other after A has used reddit.awkward{i.will.not.reply.and.expect.apology}. When A has apologized they can talk to each other again.";
 		////echo "query: $sql<br><br>";
 		createNotification($pageid, $cid, $firstPerson, $subreddit, $pagename , $notificationMessage, $tag, $rule);
 	}
@@ -1612,7 +1601,7 @@ function createCTagNotificationForSecondPerson($pageid, $cid, $wantedAnswerersRe
 		//echo "$wantedAnswerersRedditorName has already been notified!";
 	}
 	else {
-		$notification = "Redditoren $cursoryRedditorWaiting afventer svar direkte fra dig. Klik på linket yderst til højre for at se $cursoryRedditorWaiting-s kommentar!";
+		$notification = "The redditor $cursoryRedditorWaiting awaits a direct answer from you. Please click the link to see his or her comment.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
 		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$wantedAnswerersRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, NULL, '$notification', 'reddit.awkward{waits.for.your.reply.only}', 'commentatorExpectsAnswerFrom', '$subreddit', '$pagename');";

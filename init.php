@@ -77,7 +77,7 @@ mysqli_query($GLOBALS["___mysqli_ston"], $query2);
 $query4 = "SELECT * FROM prima_user WHERE redditor='$redditor';";
 $result4 = mysqli_query($GLOBALS["___mysqli_ston"], $query4);
 $count4 = mysqli_num_rows($result4);
-if ($count4 == 0 && $redditor !== "") {
+if ($count4 == 0 && $redditor) {
 	$newHash = generateRandomString();
 	$dt2=date("Y-m-d H:i:s");
 	$query5 = "INSERT INTO prima_user VALUES ('$redditor', '$dt2', '0', '$newHash', 'free', '', '0', 'neutral', '');";
@@ -675,18 +675,6 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 	$tagsAtYourDisposal = Array();
 	$c = 0;
 	$commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;
-	if (strpos($commentBody, 'reddit.awkward{doorslam}') !== false) {
-		if ($parentRedditorName === $redditor) {
-			$tagsAtYourDisposal[$c] = new stdClass();
-			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.apologize}";
-			$c++;
-			$tagsAtYourDisposal[$c] = new stdClass();
-			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{guarded.apology}";
-			$c++;
-		}
-	}
 	if (strpos($commentBody, 'reddit.awkward{your.comment.inspired.me}') !== false) {
 		if ($parentRedditorName === $redditor) {
 			$tagsAtYourDisposal[$c] = new stdClass();
@@ -874,10 +862,16 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 		$tagsAtYourDisposal[$c]->cid = $id;
 		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{that.pissed.me.off.but.please.dont.mind}";
 		$c++;
-		$tagsAtYourDisposal[$c] = new stdClass();
-		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.will.not.reply.and.expect.apology}";
-		$c++;
+		if (strpos($commentBody, 'reddit.awkward{')             ===            false) {
+			if (!needsToApologize($parentRedditorName, $redditor)) {
+					// Here: No reddit.awkward{i.will.not.reply.and.expect.apology} already
+					// Therefore: reddit.awkward{i.will.not.reply.and.expect.apology} allowed.
+					$tagsAtYourDisposal[$c] = new stdClass();
+					$tagsAtYourDisposal[$c]->cid = $id;
+					$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.will.not.reply.and.expect.apology}";
+					$c++;
+			}
+		}
 	}
 
 	if (strpos($commentBody, 'reddit.awkward{your.comment.inspired.me}') !== false) {
@@ -891,20 +885,7 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 		}
 	}
 
-	if (strpos($commentBody, 'reddit.awkward{')             ===            false) {
-		if (!needsToApologize($parentRedditorName, $redditor)) {
-			// Here: No reddit.awkward{doorslam} or reddit.awkward{i.will.not.reply.and.expect.apology} already
-			// Therefore: Doorslam allowed. reddit.awkward{i.will.not.reply.and.expect.apology} allowed.
-			$tagsAtYourDisposal[$c] = new stdClass();
-			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{doorslam}";
-			$c++;
-			$tagsAtYourDisposal[$c] = new stdClass();
-			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.will.not.reply.and.expect.apology}";
-			$c++;
-		}
-	}
+	
 	if (strpos($commentBody, 'reddit.awkward{') !== false) {
 		// Here: Body has awkward tag
 		// Therefore: Allow the reddit.awkward{youre.being.overly.ironic.and.are.violating.the.rules} tag:

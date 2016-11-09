@@ -507,6 +507,7 @@ VALUES (
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{awkward}') !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
             $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaConditionally("reddit.awkward{thanks}", $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using this tag.", 10);
             if (strpos($wantedSecondPersonWithAlleFieldsInHere->body, 'reddit.awkward{') !== false) {
                 // Here: Second person's comment has ra tag. = violation!
                 // Therefore: Give penalty
@@ -516,7 +517,7 @@ VALUES (
                 if (!hasMoreWordsBesidesTheTagItselfDude($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{awkward}")) {
                     // Here: tag is stand-alone the way it sholdn't be
                     // Therefore: Give penalty!
-                    $motivation = "You have received a penalty of -5 for using reddit.awkward{awkward} against another Reddit Awkward tag.";
+                    $motivation = "You have received a penalty of -5 for using reddit.awkward{awkward} as stand-alone tag, which it isn't.";
                     subtractPKarmaForPlainAwkwardTagViolationConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $pageid, $id, $subreddit, $pagename, $motivation, -5);
                 } else {
                     if (getWordCountBesidesTheTagItselfDude($mintCommentThatIsNotFromDBButFromTheNet->body, "reddit.awkward{awkward}") < 20) {
@@ -975,7 +976,10 @@ function needApology($needToApologizeRedditor, $angryRedditor, $subreddit, $page
 function getWordCountBesidesTheTagItselfDude($text, $tag) {
 	//This code removes line breaks
 	$text = str_replace(array("\r", "\n"), '', $text);
-	$actualStringTheWayItLooksOnThePage = '[' + $tag + '](http://redditawkward.com/rules/' + $tag + '.php)';
+	$actualStringTheWayItLooksOnThePage = $tag;
+	if (strpos($text, '](http://redditawkward.com') !== false) {
+		$actualStringTheWayItLooksOnThePage = '[' + $tag + '](http://redditawkward.com/rules/' + $tag + '.php)';
+	}
 	$text = str_replace($actualStringTheWayItLooksOnThePage, "", $text);
 	return str_word_count($text);
 }
@@ -983,7 +987,9 @@ function getWordCountBesidesTheTagItselfDude($text, $tag) {
 function hasMoreWordsBesidesTheTagItselfDude($text, $tag) {
 	//This code removes line breaks
 	$text = str_replace(array("\r", "\n"), '', $text);
-	$actualStringTheWayItLooksOnThePage = '[' . $tag . '](http://redditawkward.com/rules/' . tag . '.php)';
+	if (strpos($text, '](http://redditawkward.com') !== false) {
+		$actualStringTheWayItLooksOnThePage = '[' + $tag + '](http://redditawkward.com/rules/' + $tag + '.php)';
+	}
 	$text = str_replace($actualStringTheWayItLooksOnThePage, "", $text);
 	return (strlen($text) > $actualStringTheWayItLooksOnThePage);
 }

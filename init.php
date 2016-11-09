@@ -52,6 +52,7 @@ if ($_GET['strictversion'] !== "1") {
 	exit(0);
 }
 
+$jsonConglomerateEr['blockedError'] = "none";
 $jsonConglomerateEr['versionError'] = "none";
 $redditCommentPageURL = "https://www.reddit.com/r/" . $subreddit . "/comments/" . $commentpageid . "/" . $pagename;
 //echo $redditCommentPageURL;
@@ -101,7 +102,14 @@ die("access denied for user " . $redditor);
 }
 
 
-
+$sql = "SELECT * FROM prima_user_block WHERE redditor='$redditor' AND enabled='true'";
+$result = mysqli_query($GLOBALS["___mysqli_ston"], $sql);
+$count = mysqli_num_rows($result);
+if ($count > 0) {
+	$jsonConglomerateEr['blockedError'] = "blocked";
+	echo json_encode($jsonConglomerateEr);
+	exit(0);
+}
 
 
 $query = "SELECT DISTINCT author
@@ -606,7 +614,7 @@ curl_close($ch);
 $jsonObj = json_decode($content, false);
 $mainPostId = $jsonObj[0]->data->children[0]->data->id;
 $mintArrayOfIdsToBodiesAndAuthorsAndParentIds = traverseG($jsonObj);
-//echo "length: " . sizeof($mintArrayOfIdsToBodiesAndAuthorsAndParentIds);
+//echo "length: " . sizeof($mintArrayOfIdsToBodiesAndAuthorsAndParentIds . "<br");
 $d = 0;
 foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatIsNotFromDBButFromTheNet) {
 	$extendedInfoAboutRedditorsOnPage[$d] = new stdClass();
@@ -635,13 +643,13 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 
 
 	// Enforce general rule §5: Redditors can't direct any tags, besides reddit.awkward{no.i.mean.it} towards their own comments.
-	if ($mintCommentThatIsNotFromDBButFromTheNet->author === $redditor) {
+	/*if ($mintCommentThatIsNotFromDBButFromTheNet->author === $redditor) {
 		if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{your.comment.inspired.me}')        ===       false) {
 			$extendedInfoAboutRedditorsOnPage[$d]->tagsAtYourDisposal = null;
 			$d++;
 			continue; // Skip last of the loop structure
 		}
-	}
+	}*/
 
 
 
@@ -830,24 +838,7 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 			$c++;
 		}
 	}
-	if (strpos($commentBody, 'reddit.awkward{how.are.things.old.chap}') !== false) {
-		if ($friend) {
-			if ($parentRedditorName === $redditor and $mintCommentThatIsNotFromDBButFromTheNet->author == $friend['friend']) {
-				if ($friend['total'] >= $relationalKarmaNeeded['reddit.awkward{reading.lagerlof}']) {
-					$tagsAtYourDisposal[$c] = new stdClass();
-					$tagsAtYourDisposal[$c]->cid = $id;
-					$tagsAtYourDisposal[$c]->tag = "reddit.awkward{reading.lagerlof}";
-					$c++;
-				}
-				if ($friend['total'] >= $relationalKarmaNeeded['reddit.awkward{reading.steinbeck}']) {
-					$tagsAtYourDisposal[$c] = new stdClass();
-					$tagsAtYourDisposal[$c]->cid = $id;
-					$tagsAtYourDisposal[$c]->tag = "reddit.awkward{reading.steinbeck}";
-					$c++;
-				}
-			}
-		}
-	}
+
 	if (strpos($commentBody, 'reddit.awkward{')                     ===                 false) {
 		// Here: Body has no awkward tag of any kind
 		// Therefore: Allow awkward tag
@@ -856,7 +847,6 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{awkward}";
 		$c++;
 	}
-
 	if ($parentRedditorName === $redditor) {
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;

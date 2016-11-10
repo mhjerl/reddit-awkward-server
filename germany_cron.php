@@ -994,30 +994,13 @@ function hasMoreWordsBesidesTheTagItselfDude($text, $tag) {
 	return (strlen($text) > $actualStringTheWayItLooksOnThePage);
 }
 
-// ver2
-function addToBlackListConditionally($agentRedditor, $culpritRedditor) {
-	$query = "SELECT * FROM prima_blacklist WHERE redditor='$agentRedditor' AND blacklistedredditor='$culpritRedditor';";
-	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
-	$count3 = mysqli_num_rows($result3);
-	if ($count3 > 0) {
-		//echo "$culpritRedditor has already been added to blacklist by $agentRedditor!";
-		return;
-	}
-	else {
-		$dt2=date("Y-m-d H:i:s");
-		$sql = "INSERT INTO `redditawkward_com`.`prima_blacklist` (`redditor`, `blacklistedredditor`, `whenf`) VALUES ('$agentRedditor', '$culpritRedditor', '$dt2');";
-		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
-	}
-
-}
-
 function isUnbrokenTagSequenceBackwards($tag, $idStart, $idEnd, $json, $bigDataOYeah) {
 	$d = $idStart;
 	while ($c = getParentSemiDeprecated($d, $json)) {
 		//echo "<br>c[0]:".$c[0];
 		$body = $bigDataOYeah[$c[0]]->body;
 		$idUnderTheLup =  $c[0];
-		if ($idUnderTheLup === $idEnd) { 
+		if ($idUnderTheLup === $idEnd) {
 			return true; 
 			//echo "<brChain is unbroken!";
 		}

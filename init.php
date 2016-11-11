@@ -563,9 +563,9 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 
 
 
-	// Enforce general rule §5: Redditors can't direct any tags, besides reddit.awkward{no.i.mean.it} towards their own comments.
+	// Enforce general rule §5: Redditors can't direct any tags, besides comment-tag{no.i.mean.it} towards their own comments.
 	/*if ($mintCommentThatIsNotFromDBButFromTheNet->author === $redditor) {
-		if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'reddit.awkward{your.comment.inspired.me}')        ===       false) {
+		if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{your.comment.inspired.me}')        ===       false) {
 			$extendedInfoAboutRedditorsOnPage[$d]->tagsAtYourDisposal = null;
 			$d++;
 			continue; // Skip last of the loop structure
@@ -604,232 +604,232 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 	$tagsAtYourDisposal = Array();
 	$c = 0;
 	$commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;
-	if (strpos($commentBody, 'reddit.awkward{your.comment.inspired.me}') !== false) {
+	if (strpos($commentBody, 'comment-tag{your.comment.inspired.me}') !== false) {
 		if ($parentRedditorName === $redditor) {
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.am.glad.you.said.that.to.me}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{i.am.glad.you.said.that.to.me}";
 			$c++;
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{thanks}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{thanks}";
 			$c++;
 		}
 	}
-	if (strpos($commentBody, 'reddit.awkward{i.am.glad.you.said.that.to.me}') !== false) {
+	if (strpos($commentBody, 'comment-tag{i.am.glad.you.said.that.to.me}') !== false) {
 		if ($parentRedditorName === $redditor) {
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{thanks}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{thanks}";
 			$c++;
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{youre.welcome}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{youre.welcome}";
 			$c++;
 		}
 	}
-	if (strpos($commentBody, 'reddit.awkward{thanks}') !== false) {
+	if (strpos($commentBody, 'comment-tag{thanks}') !== false) {
 		if ($parentRedditorName === $redditor) {
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{youre.welcome}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{youre.welcome}";
 			$c++;
 		}
 	}
 	if ($id === $mainPostId) {
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.find.this.unworthy.for.discussion}";
+		$tagsAtYourDisposal[$c]->tag = "comment-tag{i.find.this.unworthy.for.discussion}";
 		$c++;
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.find.the.subject.unworthy.for.discussion}";
+		$tagsAtYourDisposal[$c]->tag = "comment-tag{i.find.the.subject.unworthy.for.discussion}";
 		$c++;
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.find.this.unworthy.for.discussion}";
+		$tagsAtYourDisposal[$c]->tag = "comment-tag{i.find.this.unworthy.for.discussion}";
 		$c++;
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.dont.think.the.original.post.has.been.addressed.yet}";
+		$tagsAtYourDisposal[$c]->tag = "comment-tag{i.dont.think.the.original.post.has.been.addressed.yet}";
 		$c++;
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.dont.think.the.original.post.has.been.taken.seriously.yet}";
+		$tagsAtYourDisposal[$c]->tag = "comment-tag{i.dont.think.the.original.post.has.been.taken.seriously.yet}";
 		$c++;
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.dont.think.the.original.post.has.been.treated.respectfully}";
+		$tagsAtYourDisposal[$c]->tag = "comment-tag{i.dont.think.the.original.post.has.been.treated.respectfully}";
 		$c++;
 
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{watch.me.playing.soccer.with.myself.in.this.video}";
+		$tagsAtYourDisposal[$c]->tag = "comment-tag{watch.me.playing.soccer.with.myself.in.this.video}";
 		$c++;
 	}
-	if (strpos($commentBody, 'reddit.awkward{i.will.not.reply.and.expect.apology}') !== false) {
+	if (strpos($commentBody, 'comment-tag{i.will.not.reply.and.expect.apology}') !== false) {
 		if ($parentRedditorName === $redditor) {
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.apologize}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{i.apologize}";
 			$c++;
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{guarded.apology}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{guarded.apology}";
 			$c++;
 		}
 	}
-	if (strpos($commentBody, 'reddit.awkward{i.apologize}') !== false or strpos($commentBody, 'reddit.awkward{guarded.apology}') !== false) {
+	if (strpos($commentBody, 'comment-tag{i.apologize}') !== false or strpos($commentBody, 'comment-tag{guarded.apology}') !== false) {
 		if ($parentRedditorName === $redditor) {
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{no.problem}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{no.problem}";
 			$c++;
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{dont.mind.its.ok.lets.move.on}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{dont.mind.its.ok.lets.move.on}";
 			$c++;
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{its.fine.i.consider.the.case.closed}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{its.fine.i.consider.the.case.closed}";
 			$c++;
 		}
 	}
-	if (strpos($commentBody, 'reddit.awkward{no.problem}') !== false or strpos($commentBody, 'reddit.awkward{dont.mind.its.ok.lets.move.on}') !== false or strpos($commentBody, 'reddit.awkward{its.fine.i.consider.the.case.closed}') !== false) {
+	if (strpos($commentBody, 'comment-tag{no.problem}') !== false or strpos($commentBody, 'comment-tag{dont.mind.its.ok.lets.move.on}') !== false or strpos($commentBody, 'comment-tag{its.fine.i.consider.the.case.closed}') !== false) {
 		if ($parentRedditorName === $redditor) {
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{thanks}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{thanks}";
 			$c++;
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{explanation.why.i.was.angry}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{explanation.why.i.was.angry}";
 			$c++;
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.was.being.careless}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{i.was.being.careless}";
 			$c++;
 		}
 	}
-	if (strpos($commentBody, 'reddit.awkward{interesting.will.write.more.in.a.few.days.time}') !== false) {
+	if (strpos($commentBody, 'comment-tag{interesting.will.write.more.in.a.few.days.time}') !== false) {
 		if ($parentRedditorName === $redditor) {
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{thanks}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{thanks}";
 			$c++;
 		}
 	}
-	if (strpos($commentBody, 'reddit.awkward{that.pissed.me.off.but.please.dont.mind}') !== false) {
+	if (strpos($commentBody, 'comment-tag{that.pissed.me.off.but.please.dont.mind}') !== false) {
 		if ($parentRedditorName === $redditor) {
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{thanks}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{thanks}";
 			$c++;
 		}
 	}
-	if (strpos($commentBody, 'reddit.awkward{i.am.one.of.the.strangest.people.youll.ever.meet}') !== false) {
+	if (strpos($commentBody, 'comment-tag{i.am.one.of.the.strangest.people.youll.ever.meet}') !== false) {
 		if ($parentRedditorName === $redditor) {
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{er.hi.what.kind.of.strange.presentation.is.that}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{er.hi.what.kind.of.strange.presentation.is.that}";
 			$c++;
 		}
 	}
 	if ($parentRedditorName === $redditor) {
 		if ($friend) {
-			if ($friend['total'] >= $relationalKarmaNeeded['reddit.awkward{f**k.you}']) {
+			if ($friend['total'] >= $relationalKarmaNeeded['comment-tag{f**k.you}']) {
 				$tagsAtYourDisposal[$c] = new stdClass();
 				$tagsAtYourDisposal[$c]->cid = $id;
-				$tagsAtYourDisposal[$c]->tag = "reddit.awkward{haha}";
+				$tagsAtYourDisposal[$c]->tag = "comment-tag{haha}";
 				$c++;
 			}
-			if ($friend['total'] >= $relationalKarmaNeeded['reddit.awkward{wtf}']) {
+			if ($friend['total'] >= $relationalKarmaNeeded['comment-tag{wtf}']) {
 				$tagsAtYourDisposal[$c] = new stdClass();
 				$tagsAtYourDisposal[$c]->cid = $id;
-				$tagsAtYourDisposal[$c]->tag = "reddit.awkward{wtf}";
+				$tagsAtYourDisposal[$c]->tag = "comment-tag{wtf}";
 				$c++;
 			}
 		}
 	}
-	if (strpos($commentBody, 'reddit.awkward{f**k.you}') !== false) {
+	if (strpos($commentBody, 'comment-tag{f**k.you}') !== false) {
 		if ($parentRedditorName === $redditor and $mintCommentThatIsNotFromDBButFromTheNet->author == $friend['friend']) {
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{haha}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{haha}";
 			$c++;
 		}
 	}
 
-	if (strpos($commentBody, 'reddit.awkward{')                     ===                 false) {
+	if (strpos($commentBody, 'comment-tag{')                     ===                 false) {
 		// Here: Body has no awkward tag of any kind
 		// Therefore: Allow awkward tag
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{awkward}";
+		$tagsAtYourDisposal[$c]->tag = "comment-tag{awkward}";
 		$c++;
 	}
 	if ($parentRedditorName === $redditor) {
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{that.pissed.me.off.but.please.dont.mind}";
+		$tagsAtYourDisposal[$c]->tag = "comment-tag{that.pissed.me.off.but.please.dont.mind}";
 		$c++;
-		if (strpos($commentBody, 'reddit.awkward{')             ===            false) {
+		if (strpos($commentBody, 'comment-tag{')             ===            false) {
 			if (!needsToApologize($parentRedditorName, $redditor)) {
-					// Here: No reddit.awkward{i.will.not.reply.and.expect.apology} already
-					// Therefore: reddit.awkward{i.will.not.reply.and.expect.apology} allowed.
+					// Here: No comment-tag{i.will.not.reply.and.expect.apology} already
+					// Therefore: comment-tag{i.will.not.reply.and.expect.apology} allowed.
 					$tagsAtYourDisposal[$c] = new stdClass();
 					$tagsAtYourDisposal[$c]->cid = $id;
-					$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.will.not.reply.and.expect.apology}";
+					$tagsAtYourDisposal[$c]->tag = "comment-tag{i.will.not.reply.and.expect.apology}";
 					$c++;
 			}
 		}
 	}
 
-	if (strpos($commentBody, 'reddit.awkward{your.comment.inspired.me}') !== false) {
+	if (strpos($commentBody, 'comment-tag{your.comment.inspired.me}') !== false) {
 		if ($mintCommentThatIsNotFromDBButFromTheNet->author === $redditor) {
 			// Here: Body has your.comment.inspired.me tag AND it's written by $redditor
-			// Therefore: Allow reddit.awkward{no.i.mean.it} tag
+			// Therefore: Allow comment-tag{no.i.mean.it} tag
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "reddit.awkward{no.i.mean.it}";
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{no.i.mean.it}";
 			$c++;
 		}
 	}
 
 	
-	if (strpos($commentBody, 'reddit.awkward{') !== false) {
+	if (strpos($commentBody, 'comment-tag{') !== false) {
 		// Here: Body has awkward tag
-		// Therefore: Allow the reddit.awkward{youre.being.overly.ironic.and.are.violating.the.rules} tag:
+		// Therefore: Allow the comment-tag{youre.being.overly.ironic.and.are.violating.the.rules} tag:
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{youre.being.overly.ironic.and.are.violating.the.rules}";
+		$tagsAtYourDisposal[$c]->tag = "comment-tag{youre.being.overly.ironic.and.are.violating.the.rules}";
 		$c++;
 	}
 	
-	if (strpos($commentBody, 'reddit.awkward{')             ===            false) {
+	if (strpos($commentBody, 'comment-tag{')             ===            false) {
 		// Here: Author of comment is myself
-		// Therefore: Allow: reddit.awkward{interesting.will.write.more.in.a.few.days.time}
+		// Therefore: Allow: comment-tag{interesting.will.write.more.in.a.few.days.time}
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "reddit.awkward{interesting.will.write.more.in.a.few.days.time}";
+		$tagsAtYourDisposal[$c]->tag = "comment-tag{interesting.will.write.more.in.a.few.days.time}";
 		$c++;
 	}
 	
 	$tagsAtYourDisposal[$c] = new stdClass();
 	$tagsAtYourDisposal[$c]->cid = $id;
-	$tagsAtYourDisposal[$c]->tag = "reddit.awkward{your.comment.inspired.me}";
+	$tagsAtYourDisposal[$c]->tag = "comment-tag{your.comment.inspired.me}";
 	$c++;
 	$tagsAtYourDisposal[$c] = new stdClass();
 	$tagsAtYourDisposal[$c]->cid = $id;
-	$tagsAtYourDisposal[$c]->tag = "reddit.awkward{waits.for.anyone}";
+	$tagsAtYourDisposal[$c]->tag = "comment-tag{waits.for.anyone}";
 	$c++;
 	$tagsAtYourDisposal[$c] = new stdClass();
 	$tagsAtYourDisposal[$c]->cid = $id;
-	$tagsAtYourDisposal[$c]->tag = "reddit.awkward{waits.for.your.reply.only}";
+	$tagsAtYourDisposal[$c]->tag = "comment-tag{waits.for.your.reply.only}";
 	$c++;
 	$tagsAtYourDisposal[$c] = new stdClass();
 	$tagsAtYourDisposal[$c]->cid = $id;
-	$tagsAtYourDisposal[$c]->tag = "reddit.awkward{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}";
+	$tagsAtYourDisposal[$c]->tag = "comment-tag{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}";
 	$c++;
 
 

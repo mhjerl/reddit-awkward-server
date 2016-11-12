@@ -968,7 +968,7 @@ function gaveNeededApology($apologizerRedditor, $angryRedditor, $subreddit, $pag
 function needApology($needToApologizeRedditor, $angryRedditor, $subreddit, $pageid, $cid) {
 	$dt2=date("Y-m-d H:i:s");
 	$t = time();
-	$sql = "INSERT INTO `redditawkward_com`.`prima_needed_apology` (`angry_redditor`, `need_to_apol_redditor`, `created_when_by_doorslam_or_expect`, `created_when_by_doorslam_or_expect_utc`, `conflict_started_subreddit`, `conflict_started_pageid`, `conflict_started_commentid`, `has_apologized`, `apologized_when`, `apologized_when_utc`, `conflict_ended_subreddit`, `conflict_ended_pageid`, `conflict_ended_commentid`) VALUES ('$angryRedditor', '$needToApologizeRedditor', $dt2, '$t', '$subreddit', '$pageid', '$cid', 'false', NULL, NULL, NULL, NULL, NULL);";
+	$sql = "INSERT INTO `redditawkward_com`.`prima_needed_apology` (`angry_redditor`, `need_to_apol_redditor`, `created_when_by_doorslam_or_expect`, `created_when_by_doorslam_or_expect_utc`, `conflict_started_subreddit`, `conflict_started_pageid`, `conflict_started_commentid`, `has_apologized`, `apologized_when`, `apologized_when_utc`, `conflict_ended_subreddit`, `conflict_ended_pageid`, `conflict_ended_commentid`, `id`) VALUES ('$angryRedditor', '$needToApologizeRedditor', $dt2, '$t', '$subreddit', '$pageid', '$cid', 'false', NULL, NULL, NULL, NULL, NULL, NULL);";
 	mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 }
 

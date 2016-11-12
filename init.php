@@ -647,10 +647,6 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 		$c++;
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
-		$tagsAtYourDisposal[$c]->tag = "comment-tag{i.find.this.unworthy.for.discussion}";
-		$c++;
-		$tagsAtYourDisposal[$c] = new stdClass();
-		$tagsAtYourDisposal[$c]->cid = $id;
 		$tagsAtYourDisposal[$c]->tag = "comment-tag{i.dont.think.the.original.post.has.been.addressed.yet}";
 		$c++;
 		$tagsAtYourDisposal[$c] = new stdClass();

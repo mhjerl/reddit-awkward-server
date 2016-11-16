@@ -114,7 +114,9 @@ if ($count > 0) {
 
 $query = "SELECT DISTINCT author
 FROM prima_stuttgart s, prima_user u
-WHERE s.author = u.redditor AND s.pageid = '$commentpageid'";
+WHERE s.author = u.redditor AND s.pageid = '$commentpageid' AND u.redditor != '$redditor'";
+
+//echo $query . "<br>";
 
 $result = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 
@@ -133,10 +135,11 @@ for ($c = 0; $c < sizeof($memberArrayTemp); $c++) {
 	$row4 = mysqli_fetch_row($result4);
 	$imageType = $row4[0];
 	$imageCustom = $row4[1];
-	$memberArray[$c] = Array();
-	$memberArray[$c]['member'] = $otherRedditor;
-	$memberArray[$c]['imagetype'] = $imageType;
-	$memberArray[$c]['imagecustom'] = $imageCustom;
+	$memberArray[$c] = new stdClass();
+	$memberArray[$c]->member = $otherRedditor;
+	$memberArray[$c]->imagetype = $imageType;
+	$memberArray[$c]->imagecustom = $imageCustom;
+	//echo $otherRedditor . " " . $imageType . " " . $imageCustom;
 	
 }
 
@@ -296,10 +299,13 @@ $row4 = mysqli_fetch_row($result4);
 $totalPKarma = $row4[2];
 $accountType = $row4[4];
 $totalRKarma = $row4[6];
+$imagetype = $row4[7];
+$imagecustom = $row4[8];
 $jsonConglomerateEr['totalPKarma'] = $totalPKarma;
 $jsonConglomerateEr['accountType'] = $accountType;
 $jsonConglomerateEr['totalRKarma'] = $totalRKarma;
-
+$jsonConglomerateEr['imagetype'] = $imagetype;
+$jsonConglomerateEr['imagecustom'] = $imagecustom;
 
 
 
@@ -534,6 +540,11 @@ $content = curl_exec($ch);
 curl_close($ch);
 $jsonObj = json_decode($content, false);
 $mainPostId = $jsonObj[0]->data->children[0]->data->id;
+$mainPostAuthor = $jsonObj[0]->data->children[0]->data->author;
+$mainPostType = "link";
+if ($jsonObj[0]->data->children[0]->data->selftext_html) {
+	$mainPostType = "text";
+}
 $mintArrayOfIdsToBodiesAndAuthorsAndParentIds = traverseG($jsonObj);
 //echo "length: " . sizeof($mintArrayOfIdsToBodiesAndAuthorsAndParentIds . "<br");
 $d = 0;
@@ -636,6 +647,19 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 			$c++;
 		}
 	}
+	if ($id !== $mainPostId) {
+		// Here: Post is not main post
+		// Therefore: Check 
+		if ($parentCommentWithAllInfoInHere->id === $mainPostId && $redditor === $mainPostAuthor && $redditor !== $mintCommentThatIsNotFromDBButFromTheNet->author) {
+			// Here: Somebody commented on this redditors main post
+			// Therefore: Give him/her the ability to say "thanks but a bit off topic"
+			$tagsAtYourDisposal[$c] = new stdClass();
+			$tagsAtYourDisposal[$c]->cid = $id;
+			$tagsAtYourDisposal[$c]->tag = "comment-tag{thanks.but.a.bit.off.topic}";
+			$c++;
+		
+		}
+	} 
 	if ($id === $mainPostId) {
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
@@ -657,11 +681,24 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 		$tagsAtYourDisposal[$c]->cid = $id;
 		$tagsAtYourDisposal[$c]->tag = "comment-tag{i.dont.think.the.original.post.has.been.treated.respectfully}";
 		$c++;
-
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
 		$tagsAtYourDisposal[$c]->tag = "comment-tag{watch.me.playing.soccer.with.myself.in.this.video}";
 		$c++;
+		if ($mintCommentThatIsNotFromDBButFromTheNet->author !== $redditor) {
+			if ($mainPostType === "text") {
+				$tagsAtYourDisposal[$c] = new stdClass();
+				$tagsAtYourDisposal[$c]->cid = $id;
+				$tagsAtYourDisposal[$c]->tag = "comment-tag{your.post.inspired.me}";
+				$c++;
+			}
+			else {
+				$tagsAtYourDisposal[$c] = new stdClass();
+				$tagsAtYourDisposal[$c]->cid = $id;
+				$tagsAtYourDisposal[$c]->tag = "comment-tag{your.link.inspired.me}";
+				$c++;
+			}
+		}
 	}
 	if (strpos($commentBody, 'comment-tag{i.will.not.reply.and.expect.apology}') !== false) {
 		if ($parentRedditorName === $redditor) {
@@ -731,31 +768,6 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 			$c++;
 		}
 	}
-	if ($parentRedditorName === $redditor) {
-		if ($friend) {
-			if ($friend['total'] >= $relationalKarmaNeeded['comment-tag{f**k.you}']) {
-				$tagsAtYourDisposal[$c] = new stdClass();
-				$tagsAtYourDisposal[$c]->cid = $id;
-				$tagsAtYourDisposal[$c]->tag = "comment-tag{haha}";
-				$c++;
-			}
-			if ($friend['total'] >= $relationalKarmaNeeded['comment-tag{wtf}']) {
-				$tagsAtYourDisposal[$c] = new stdClass();
-				$tagsAtYourDisposal[$c]->cid = $id;
-				$tagsAtYourDisposal[$c]->tag = "comment-tag{wtf}";
-				$c++;
-			}
-		}
-	}
-	if (strpos($commentBody, 'comment-tag{f**k.you}') !== false) {
-		if ($parentRedditorName === $redditor and $mintCommentThatIsNotFromDBButFromTheNet->author == $friend['friend']) {
-			$tagsAtYourDisposal[$c] = new stdClass();
-			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "comment-tag{haha}";
-			$c++;
-		}
-	}
-
 	if (strpos($commentBody, 'comment-tag{')                     ===                 false) {
 		// Here: Body has no awkward tag of any kind
 		// Therefore: Allow awkward tag
@@ -810,11 +822,20 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 		$tagsAtYourDisposal[$c]->tag = "comment-tag{interesting.will.write.more.in.a.few.days.time}";
 		$c++;
 	}
+
+	if ($redditor !== $mintCommentThatIsNotFromDBButFromTheNet->author) {
+		$tagsAtYourDisposal[$c] = new stdClass();
+		$tagsAtYourDisposal[$c]->cid = $id;
+		$tagsAtYourDisposal[$c]->tag = "comment-tag{a.warning.from.one.intellectual.to.another}";
+		$c++;
+	}
 	
-	$tagsAtYourDisposal[$c] = new stdClass();
-	$tagsAtYourDisposal[$c]->cid = $id;
-	$tagsAtYourDisposal[$c]->tag = "comment-tag{your.comment.inspired.me}";
-	$c++;
+	if ($mainPostId !== $id) {
+		$tagsAtYourDisposal[$c] = new stdClass();
+		$tagsAtYourDisposal[$c]->cid = $id;
+		$tagsAtYourDisposal[$c]->tag = "comment-tag{your.comment.inspired.me}";
+		$c++;
+	}
 	$tagsAtYourDisposal[$c] = new stdClass();
 	$tagsAtYourDisposal[$c]->cid = $id;
 	$tagsAtYourDisposal[$c]->tag = "comment-tag{waits.for.anyone}";
@@ -827,6 +848,10 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 	$tagsAtYourDisposal[$c]->cid = $id;
 	$tagsAtYourDisposal[$c]->tag = "comment-tag{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}";
 	$c++;
+
+
+
+
 
 
 	$extendedInfoAboutRedditorsOnPage[$d]->tagsAtYourDisposal = $tagsAtYourDisposal;

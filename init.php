@@ -8,7 +8,7 @@
 
 
 
-header('Content-Type: application/json');
+//header('Content-Type: application/json');
 
 
 
@@ -232,16 +232,18 @@ $gifts = Array();
 $c = 0;
 while($row = mysqli_fetch_array($result)) {
 	$gifts[$c] = Array();
-	$pageid = $row[1];
-	$commentid = $row[2];
-	$when = $row[3];
-	$utc = $row[4];
-	$points = $row[5];
-	$motivation = $row[9];
-	$rule = $row[10];
-	$subreddit = $row[11];
-	$pagename = $row[12];
-	$tag = $row[13];
+	$redditorAddressed = $row[1];
+	$pageid = $row[2];
+	$commentid = $row[3];
+	$when = $row[4];
+	$utc = $row[5];
+	$points = $row[6];
+	$motivation = $row[10];
+	$rule = $row[11];
+	$subreddit = $row[12];
+	$pagename = $row[13];
+	$tag = $row[14];
+	$gifts[$c]['redditorAddressed'] = $redditorAddressed;
 	$gifts[$c]['pageid'] = $pageid;
 	$gifts[$c]['commentid'] = $commentid;
 	$gifts[$c]['when'] = $when;
@@ -260,10 +262,12 @@ while($row = mysqli_fetch_array($result)) {
 	P R O D U C T I O N :
 
 */
+
+/*
 	$t = time();
 	$query2 = "UPDATE prima_karmagift SET claimed='true', claimedwhen='$dt2', claimedwhen_utc='$t' WHERE redditor='$redditor' AND pageid='$pageid' AND commentid='$commentid';";
 	mysqli_query($GLOBALS["___mysqli_ston"], $query2);
-
+*/
 
 
 	$query3 = "SELECT * FROM prima_user WHERE redditor='$redditor';";
@@ -355,11 +359,11 @@ while($row = mysqli_fetch_array($result)) {
 */
 
 
-
+/*
 	$t = time();
 	$query2 = "UPDATE prima_notification SET claimed='true', claimedwhen='$dt2', claimedwhen_utc='$t' WHERE redditor='$redditor' AND pageid='$pageid' AND commentid='$commentid';";
 	mysqli_query($GLOBALS["___mysqli_ston"], $query2);
-
+*/
 
 
   $c++;
@@ -562,7 +566,7 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 	$grandParentRedditorName = $grandParentCommentWithAllInfoInHere->author;
 	$friendRelationStrength = null;
 	$friend = null;
-
+	$tagsAtYourDisposal = Array();
 	
 
 
@@ -575,13 +579,13 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 
 
 	// Enforce general rule §5: Redditors can't direct any tags, besides comment-tag{no.i.mean.it} towards their own comments.
-	/*if ($mintCommentThatIsNotFromDBButFromTheNet->author === $redditor) {
+	if ($mintCommentThatIsNotFromDBButFromTheNet->author === $redditor) {
 		if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{your.comment.inspired.me}')        ===       false) {
-			$extendedInfoAboutRedditorsOnPage[$d]->tagsAtYourDisposal = null;
+			$extendedInfoAboutRedditorsOnPage[$d]->tagsAtYourDisposal = $tagsAtYourDisposal;
 			$d++;
 			continue; // Skip last of the loop structure
 		}
-	}*/
+	}
 
 
 
@@ -612,7 +616,7 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 		}
 	}*/
 	//$extendedInfoAboutRedditorsOnPage[$d]->relationStrength = $friendRelationStrength;
-	$tagsAtYourDisposal = Array();
+	
 	$c = 0;
 	$commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;
 	if (strpos($commentBody, 'comment-tag{your.comment.inspired.me}') !== false) {
@@ -776,13 +780,17 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 		$tagsAtYourDisposal[$c]->tag = "comment-tag{awkward}";
 		$c++;
 	}
+	//echo "<br>$parentRedditorName - $redditor";
 	if ($parentRedditorName === $redditor) {
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
 		$tagsAtYourDisposal[$c]->tag = "comment-tag{that.pissed.me.off.but.please.dont.mind}";
 		$c++;
-		if (strpos($commentBody, 'comment-tag{')             ===            false) {
+		//echo "<br>-------------->body: $commentBody";
+		//if (strpos($commentBody, 'comment-tag{')             ===            false) {
+			//echo "<br>b";
 			if (!needsToApologize($parentRedditorName, $redditor)) {
+					//echo "<br>c";
 					// Here: No comment-tag{i.will.not.reply.and.expect.apology} already
 					// Therefore: comment-tag{i.will.not.reply.and.expect.apology} allowed.
 					$tagsAtYourDisposal[$c] = new stdClass();
@@ -790,7 +798,7 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 					$tagsAtYourDisposal[$c]->tag = "comment-tag{i.will.not.reply.and.expect.apology}";
 					$c++;
 			}
-		}
+		//}
 	}
 
 	if (strpos($commentBody, 'comment-tag{your.comment.inspired.me}') !== false) {
@@ -903,7 +911,15 @@ $jsonConglomerateEr['conflictRedditorsOnPage'] = $data;
 
 
 
+
+
+
+
 echo json_encode($jsonConglomerateEr);
+
+
+
+
 
 
 

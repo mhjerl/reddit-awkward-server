@@ -61,7 +61,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 	$jsonObj = json_decode($content, false);
 	$mainPostId = $jsonObj[0]->data->children[0]->data->id;
 	$mainPostAuthor = $jsonObj[0]->data->children[0]->data->author;
-	echo "<br>$mainPostId: $mainPostAuthor";
+	//echo "<br>$mainPostId: $mainPostAuthor";
 	//echo "mainPostId: " . $mainPostId;
 
     //1. look for new and altered comment texts
@@ -162,45 +162,58 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
         }
     }
 
-    // Enforce general rule §2: No self-made tags. - and: insert into prima_tag_use
+    // Enforce general rule §2: No self-made tags, except on fridays. - and: insert into prima_tag_use
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{") !== false) {
-            $commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;
-            // Strip text between {}
-            preg_match('#\{(.*?)\}#', $commentBody, $match);
-            $shortHandTag = $match[1];
-			$tag = "comment-tag{" . $shortHandTag . "}";
-            if (!array_key_exists($shortHandTag, $tagCategories)) {
-                // Here: Unknown tag
-                // Therefore: Give penalty
-                subtractPKarmaConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $mintCommentThatIsNotFromDBButFromTheNet->author, $tag, $pageid, $id, $subreddit, $pagename, "You used a self-made tg.", -100);
-            }
-			else {
-				// Here: Known tag
-				// Therefore: Insert it into the very big table prima_tag_use
-				$sql = "SELECT * FROM prima_tag_use WHERE pageid='$pageid' AND commentid='$id'";
-				$result = mysqli_query($GLOBALS["___mysqli_ston"], $sql);
-				$count = mysqli_num_rows($result);
-				//echo "hej";
-				if ($count == 0) {
-					//echo "dav";
-					$redditor = $mintCommentThatIsNotFromDBButFromTheNet->author;
-					$dt2=date("Y-m-d H:i:s");
-					$t = time();
-$sql = "INSERT INTO  `redditawkward_com`.`prima_tag_use` (
-`redditor` ,
-`pageid` ,
-`commentid` ,
-`subreddit` ,
-`when_detected_utc` ,
-`when_detected` ,
-`tag`
-)
-VALUES (
-'$redditor',  '$pageid',  '$id',  '$subreddit',  '$t',  '$dt2',  '$tag'
-);";
-					//echo $sql;
-					mysqli_query($GLOBALS["___mysqli_ston"], $sql);
+			$sql = "SELECT timezone FROM prima_user WHERE redditor='" . $mintCommentThatIsNotFromDBButFromTheNet->author . "';";
+			$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $sql);
+			$row3 = mysqli_fetch_row($result3);
+			$timezone = $row3[0];
+			if ($timezone) {
+				$timezoneSeconds = $timezone * 60 * 60;
+				$timeUTCTagUsed = $mintCommentThatIsNotFromDBButFromTheNet->utc + $timezoneSeconds;
+				$weekday = gmdate("N", $timeUTCTagUsed);
+				
+
+				$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+		        $commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;
+		        // Strip text between {}
+		        preg_match('#\{(.*?)\}#', $commentBody, $match);
+		        $shortHandTag = $match[1];
+				echo "<br><br>$shortHandTag; $weekday; $timezone; " . $mintCommentThatIsNotFromDBButFromTheNet->utc;
+				$tag = "comment-tag{" . $shortHandTag . "}";
+		        if (!array_key_exists($shortHandTag, $tagCategories)) {
+		            // Here: Unknown tag
+		            // Therefore: Give penalty
+		            subtractPKarmaConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $wantedSecondPersonWithAlleFieldsInHere->author, $tag, $pageid, $id, $subreddit, $pagename, "You used a self-made tag.", -100);
+		        }
+				else {
+					// Here: Known tag
+					// Therefore: Insert it into the very big table prima_tag_use
+					$sql = "SELECT * FROM prima_tag_use WHERE pageid='$pageid' AND commentid='$id'";
+					$result = mysqli_query($GLOBALS["___mysqli_ston"], $sql);
+					$count = mysqli_num_rows($result);
+					//echo "hej";
+					if ($count == 0) {
+						//echo "dav";
+						$redditor = $mintCommentThatIsNotFromDBButFromTheNet->author;
+						$dt2=date("Y-m-d H:i:s");
+						$t = time();
+	$sql = "INSERT INTO  `redditawkward_com`.`prima_tag_use` (
+	`redditor` ,
+	`pageid` ,
+	`commentid` ,
+	`subreddit` ,
+	`when_detected_utc` ,
+	`when_detected` ,
+	`tag`
+	)
+	VALUES (
+	'$redditor',  '$pageid',  '$id',  '$subreddit',  '$t',  '$dt2',  '$tag'
+	);";
+						//echo $sql;
+						mysqli_query($GLOBALS["___mysqli_ston"], $sql);
+					}
 				}
 			}
         }
@@ -235,19 +248,16 @@ VALUES (
 	// General rule §4 implemented below
 
 
-	// Enforce general rule §5: Redditors can't direct any tags, besides comment-tag{no.i.mean.it} towards their own comments.
+	// Enforce general rule §5: Redditors can't direct any tags towards their own comments.
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{") !== false) {
 			$redditor = $mintCommentThatIsNotFromDBButFromTheNet->author;
 			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
 			if ($redditor === $wantedSecondPersonWithAlleFieldsInHere) {
 				// Here: Redditor is responding to himself
-				// Test if he's using the comment-tag{no.i.mean.it} tag
-				if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{no.i.mean.it")      ===       false) {
-					// Here: He is not using the comment-tag{no.i.mean.it} tag
-					// Therefore: Give penalty
-					subtractPKarmaConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $mintCommentThatIsNotFromDBButFromTheNet->author, $tag, $pageid, $id, $subreddit, $pagename, "General Rule §5: §5 Nearly all Awkward tags are social in nature. Redditors can't direct any tags, besides comment-tag{no.i.mean.it}, towards their own comments.");
-				}
+				// Therefore: Give penalty
+				subtractPKarmaConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $mintCommentThatIsNotFromDBButFromTheNet->author, $tag, $pageid, $id, $subreddit, $pagename, "General Rule §5: §5 Nearly all Awkward tags are social in nature. Redditors can't direct any tags towards their own comments.");
+			
 			}
         }
     }
@@ -832,6 +842,25 @@ VALUES (
         }
     }
 
+
+    // look for "comment-tag{your.link.inspired.me}"
+    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
+        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{your.link.inspired.me}') !== false) {
+            $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
+			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{your.link.inspired.me}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+        }
+    }
+
+    // look for "comment-tag{your.post.inspired.me}"
+    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
+        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{your.post.inspired.me}') !== false) {
+            $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
+			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{your.post.inspired.me}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+        }
+    }
+
     // look for "comment-tag{your.comment.inspired.me}"
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{your.comment.inspired.me}') !== false) {
@@ -843,44 +872,6 @@ VALUES (
                 // Here: Word count of second persons comment is less than 20 words
                 // Therefore: Give penalty to first person
                 subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere, "comment-tag{your.comment.inspired.me}", $pageid, $id, $subreddit, $pagename);
-            }
-            $idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe = anybodyOutThereWhoHasMeAsParentHeAskedKnowinglyNoActuallyINeedTheOLDESTOneOfMyKidsAndNotMyselfByTheWay($jsonObj, $id, $mintCommentThatIsNotFromDBButFromTheNet->author);
-            $foundValidIMeanItTag = false;
-            for ($j = 0; $j < sizeof($idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe); $j++) {
-                if ($idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[$j]->author === $mintCommentThatIsNotFromDBButFromTheNet->author) {
-                    // Here: Second person = first person.
-                    // Therefore: Find out if the reply has been correctly answered with a stand-alone comment-tag{no.i.mean.it} tag
-                    if (strpos($idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[$j]->body, 'comment-tag{no.i.mean.it}') !== false) {
-                        // Here: First person answered himself with a comment-tag{no.i.mean.it} tag, the way he should do
-                        // Therefore: Find out if it is stand-alone
-                        if (hasMoreWordsBesidesTheTagItselfDude($idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[j]->body, "comment-tag{no.i.mean.it}")) {
-                            // Here: It was stand-alone
-                            // Therefore: Lastly: Find out if more than 10 minutes has gone by and garble if it is so.
-                            $utc = $idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[j]->utc;
-                            $minutesGoneBy = ((time() - $utc) / 60);
-                            if (minutesGoneBy <= 10) {
-                                // Here: Everything is ok
-                                // Therefore: Give points for use of comment-tag{no.i.mean.it} tag
-                                givePKarmaForUseOfTagConditionally("comment-tag{no.i.mean.it}", $mintCommentThatIsNotFromDBButFromTheNet->author, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
-                                $foundValidIMeanItTag = true;
-                            } else {
-                                // Here: Expired
-                                // Therefore: Do nothing
-                            }
-                        }
-                    }
-                }
-            }
-            if (!$foundValidIMeanItTag) {
-                // Here: No valid no.i.mean.it tag found
-                // Therefore: See if too long time has gone by and, in this case, give a penalty
-                $utc = $idAndTimeAndAuthorAndUTCArrayOfOldestChildWhoIsNtMe[j]->utc;
-                $minutesGoneBy = ((time() - $utc) / 60);
-                if ($minutesGoneBy > 10) {
-                    // Here: Too long time has passed
-                    // Therefore: Subtract karma
-                    subtractPKarmaForTagInspiredNotBeingFollowedUpByIMeanItTagInTimeConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $pageid, $id, $subreddit, $pagename);
-                }
             }
         }
     }
@@ -966,7 +957,7 @@ function needApology($needToApologizeRedditor, $angryRedditor, $subreddit, $page
 	$dt2=date("Y-m-d H:i:s");
 	$t = time();
 	$sql = "INSERT INTO `redditawkward_com`.`prima_needed_apology` (`angry_redditor`, `need_to_apol_redditor`, `created_when_by_doorslam_or_expect`, `created_when_by_doorslam_or_expect_utc`, `conflict_started_subreddit`, `conflict_started_pageid`, `conflict_started_commentid`, `has_apologized`, `apologized_when`, `apologized_when_utc`, `conflict_ended_subreddit`, `conflict_ended_pageid`, `conflict_ended_commentid`, `id`) VALUES ('$angryRedditor', '$needToApologizeRedditor', '$dt2', '$t', '$subreddit', '$pageid', '$cid', 'false', NULL, NULL, NULL, NULL, NULL, NULL);";
-	echo "<br>$sql";
+	//echo "<br>$sql";
 	mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 }
 
@@ -1251,25 +1242,7 @@ $sql = "INSERT INTO  `redditawkward_com`.`prima_relation (`firstperson`, `second
 
 }
 
-function subtractPKarmaForTagInspiredNotBeingFollowedUpByIMeanItTagInTimeConditionally($redditor, $pid, $cid, $subreddit, $pagename) {
-	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
-	//echo "<br>$query";
-	$result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
-	$count3 = mysqli_num_rows($result3);
-	if ($count3 > 0) {
-		//echo "<br>$redditor has already been given a penalty!";
-	}
-	else {
-		$actualPoints = -10;
- 		//echo "<br><br>Awarding $actualPoints to $redditor";
-		$motivation = "You have received a penalty of $actualPoints because you didn\'t use the comment-tag{no.i.mean.it} tag as a reply to the comment where you used comment-tag{your.comment.inspired.me}: §3 Should always be followed by an answer to yourself, within 10 minutes, with a single, stand-alone comment-tag{no.i.mean.it} tag.";
-		$dt2=date("Y-m-d H:i:s");
-		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_karmagift` (`redditor`, `redditoraddressed`, `pageid`, `commentid`, `whenf`, `utc`, `points`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `rule`, `subreddit`, `pagename`, `tag`, `id`) VALUES ('$redditor', '$redditor', '$pid', '$cid', '$dt2', '$t', '$actualPoints', 'false', NULL, NULL, '$motivation', 'subtractPKarmaForTagInspiredNotBeingFollowedUpByIMeanItTagInTimeConditionally', '$subreddit', '$pagename', 'comment-tag{your.comment.inspired.me}', NULL);";
-		//echo "<br><br>$sql";
-		 mysqli_query($GLOBALS["___mysqli_ston"], $sql);
-	}
-}
+
 
 function subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally($redditor, $redditorAddressed, $tag, $pid, $cid, $subreddit, $pagename) {
 	$query = "SELECT * FROM prima_karmagift WHERE redditor='$redditor' AND pageid='$pid' AND commentid='$cid'";
@@ -1817,8 +1790,13 @@ function traverseObjectG($obj, &$in_arr = array()) {
   $array = get_object_vars($obj);
   $properties = array_keys($array);
   foreach($properties as $key) {
+		if ($key == "created_utc") {
+			if (!$in_arr[$rememberOThatIdYeah] ) { $in_arr[$rememberOThatIdYeah] = new stdClass();}
+			$in_arr[$rememberOThatIdYeah]->utc = $array['created_utc'];
+		}
 		if ($key == "body") {
 			////echo "<br><br>Id:" . $rememberOThatIdYeah . " Body:" . $array['body'];
+			if (!$in_arr[$rememberOThatIdYeah] ) { $in_arr[$rememberOThatIdYeah] = new stdClass();}
 			$in_arr[$rememberOThatIdYeah]->body = $array['body'];
 		}
 		if ($key == "parent_id") { if (!$in_arr[$rememberOThatIdYeah] ) { $in_arr[$rememberOThatIdYeah] = new stdClass();} $in_arr[$rememberOThatIdYeah]->parent_id = substr($array['parent_id'], 3); }

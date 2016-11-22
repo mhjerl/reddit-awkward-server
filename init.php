@@ -28,6 +28,7 @@ $commentpageid = $_GET['commentpageid'];
 $pagename = $_GET['pagename'];
 $hash = $_GET['hash'];
 $subreddit = $_GET['subreddit'];
+$visitortimezone = $_GET['visitortimezone'];
 
 if (!isset($_GET['redditor'])) { die("Forbidden"); }
 if ($_GET['redditor'] === "") { die("Forbidden..."); }
@@ -41,13 +42,16 @@ if ($_GET['commentpageid'] === "") { die("Forbidden, cpid."); }
 if (!isset($_GET['pagename'])) { die("Forbidden, cpn."); }
 if ($_GET['pagename'] === "") { die("Forbidden, cpn."); }
 
+if (!isset($_GET['visitortimezone'])) { die("Forbidden, tz."); }
+if ($_GET['visitortimezone'] === "") { die("Forbidden, tz."); }
+
 if (!isset($_GET['strictversion'])) { die("Forbidden, sv."); }
 if ($_GET['strictversion'] === "") { die("Forbidden, sv."); }
 
 $jsonConglomerateEr = Array();
 
-if ($_GET['strictversion'] !== "1") {
-	$jsonConglomerateEr['versionError'] = "You need to upgrade to version 1";
+if ($_GET['strictversion'] !== "2") {
+	$jsonConglomerateEr['versionError'] = "You need to upgrade this app...";
 	echo json_encode($jsonConglomerateEr);
 	exit(0);
 }
@@ -62,9 +66,6 @@ $result = mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 $count = mysqli_num_rows($result);
 if ($count == 0) {
 	$t = time();
-	
-
-
 	$sql = "INSERT INTO prima_germany (latestprimadonnaactivity, latestprimadonnaactivity_utc, source, pageid, pageurl, undersurveillance) VALUES ('$dt2', '$t', 'reddit', '$commentpageid', '$redditCommentPageURL', 'true');";
 	mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 }
@@ -81,7 +82,7 @@ $count4 = mysqli_num_rows($result4);
 if ($count4 == 0 && $redditor) {
 	$newHash = generateRandomString();
 	$dt2=date("Y-m-d H:i:s");
-	$query5 = "INSERT INTO prima_user VALUES ('$redditor', '$dt2', '0', '$newHash', 'free', '', '0', 'neutral', '');";
+	$query5 = "INSERT INTO prima_user VALUES ('$redditor', '$dt2', '0', '$newHash', 'free', NULL, '0', 'neutral', NULL, '', NULL);";
 
 
 
@@ -100,6 +101,10 @@ if ($dbHash !== $hash) {
 
 die("access denied for user " . $redditor);
 }
+
+
+$query4 = "UPDATE prima_user SET timezone='$visitortimezone' WHERE redditor='$redditor';";
+mysqli_query($GLOBALS["___mysqli_ston"], $query4);
 
 
 $sql = "SELECT * FROM prima_user_block WHERE redditor='$redditor' AND enabled='true'";
@@ -559,6 +564,7 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 	//$extendedInfoAboutRedditorsOnPage[$d]->parent_id = $parentId;
 	//$extendedInfoAboutRedditorsOnPage[$d]->author = $mintCommentThatIsNotFromDBButFromTheNet->author;
 	//$extendedInfoAboutRedditorsOnPage[$d]->body = $mintCommentThatIsNotFromDBButFromTheNet->body;
+	
 	$parentCommentWithAllInfoInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$parentId];
 	$grandParentCommentWithAllInfoInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$parentCommentWithAllInfoInHere->parent_id];
 	$parentRedditorName = $parentCommentWithAllInfoInHere->author;
@@ -578,13 +584,11 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 
 
 
-	// Enforce general rule §5: Redditors can't direct any tags, besides comment-tag{no.i.mean.it} towards their own comments.
+	// Enforce general rule §5: Redditors can't direct any tags towards their own comments.
 	if ($mintCommentThatIsNotFromDBButFromTheNet->author === $redditor) {
-		if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{your.comment.inspired.me}')        ===       false) {
-			$extendedInfoAboutRedditorsOnPage[$d]->tagsAtYourDisposal = $tagsAtYourDisposal;
-			$d++;
-			continue; // Skip last of the loop structure
-		}
+		$extendedInfoAboutRedditorsOnPage[$d]->tagsAtYourDisposal = $tagsAtYourDisposal;
+		$d++;
+		continue; // Skip last of the loop structure
 	}
 
 
@@ -651,12 +655,21 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 			$c++;
 		}
 	}
+	/*echo "<br><br><br>1:$id";
+	echo "<br>$mainPostId";
+	echo "<br>$parentId";
+	echo "<br>$redditor";
+	echo "<br>$mainPostAuthor";
+	echo "<br>$mintCommentThatIsNotFromDBButFromTheNet->author";
+	echo "<br>Done...";*/
+
+
 	if ($id !== $mainPostId) {
 		// Here: Post is not main post
 		// Therefore: Check 
-		if ($parentCommentWithAllInfoInHere->id === $mainPostId && $redditor === $mainPostAuthor && $redditor !== $mintCommentThatIsNotFromDBButFromTheNet->author) {
+		if ($parentId === $mainPostId && $redditor === $mainPostAuthor && $redditor !== $mintCommentThatIsNotFromDBButFromTheNet->author) {
 			// Here: Somebody commented on this redditors main post
-			// Therefore: Give him/her the ability to say "thanks but a bit off topic"
+			// Therefore: Give him/her the ability to say: "thanks but a bit off topic"
 			$tagsAtYourDisposal[$c] = new stdClass();
 			$tagsAtYourDisposal[$c]->cid = $id;
 			$tagsAtYourDisposal[$c]->tag = "comment-tag{thanks.but.a.bit.off.topic}";
@@ -665,6 +678,10 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 		}
 	} 
 	if ($id === $mainPostId) {
+		$tagsAtYourDisposal[$c] = new stdClass();
+		$tagsAtYourDisposal[$c]->cid = $id;
+		$tagsAtYourDisposal[$c]->tag = "comment-tag{i.wont.comment.for.personal.reasons}";
+		$c++;
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
 		$tagsAtYourDisposal[$c]->tag = "comment-tag{i.find.this.unworthy.for.discussion}";
@@ -800,18 +817,6 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 			}
 		//}
 	}
-
-	if (strpos($commentBody, 'comment-tag{your.comment.inspired.me}') !== false) {
-		if ($mintCommentThatIsNotFromDBButFromTheNet->author === $redditor) {
-			// Here: Body has your.comment.inspired.me tag AND it's written by $redditor
-			// Therefore: Allow comment-tag{no.i.mean.it} tag
-			$tagsAtYourDisposal[$c] = new stdClass();
-			$tagsAtYourDisposal[$c]->cid = $id;
-			$tagsAtYourDisposal[$c]->tag = "comment-tag{no.i.mean.it}";
-			$c++;
-		}
-	}
-
 	
 	if (strpos($commentBody, 'comment-tag{') !== false) {
 		// Here: Body has awkward tag

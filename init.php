@@ -797,7 +797,7 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 		$tagsAtYourDisposal[$c]->tag = "comment-tag{awkward}";
 		$c++;
 	}
-	//echo "<br>$parentRedditorName - $redditor";
+	//echo "-----------------------------------------------------><br>parent: $parentRedditorName -redditor: $redditor";
 	if ($parentRedditorName === $redditor) {
 		$tagsAtYourDisposal[$c] = new stdClass();
 		$tagsAtYourDisposal[$c]->cid = $id;
@@ -861,7 +861,10 @@ foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id=>$mintCommentThatI
 	$tagsAtYourDisposal[$c]->cid = $id;
 	$tagsAtYourDisposal[$c]->tag = "comment-tag{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}";
 	$c++;
-
+	$tagsAtYourDisposal[$c] = new stdClass();
+	$tagsAtYourDisposal[$c]->cid = $id;
+	$tagsAtYourDisposal[$c]->tag = "comment-tag{a.warm.welcome.to.my.world.without.a.naive.invitation.to.be.my.friend}";
+	$c++;
 
 
 

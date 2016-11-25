@@ -30,7 +30,7 @@ while($row = mysqli_fetch_array($result)){
 		mysqli_query($GLOBALS["___mysqli_ston"], $query2);
 	}
   	else {
-		putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($pageid, $pageurl, $subreddit, $tagCategories);
+		putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($pageid, $pageurl, $subreddit, $tagCategories, $intuitiveTagNames);
 	
 	}
 	////echo "hej0! ";
@@ -47,7 +47,7 @@ function stripTrailingSlash($url) {
 	return $url;
 }
 
-function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($pageid, $pageurl, $subreddit, $tagCategories) {
+function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($pageid, $pageurl, $subreddit, $tagCategories, $intuitiveTagNames) {
 	$uri_path = parse_url($pageurl, PHP_URL_PATH);
 	$uri_segments = explode('/', $uri_path);
 	$subreddit = $uri_segments[2];
@@ -59,6 +59,14 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 	$content = curl_exec($ch);
 	curl_close($ch);
 	$jsonObj = json_decode($content, false);
+	echo "<br><br><br>";
+	if ($jsonObj->message) {
+		echo "<br>Big big error!";
+		echo "<br>message: " . $jsonObj->message;
+		echo "<br>pageurl: " . $pageurl;
+		return;
+	}
+	//var_dump($jsonObj);
 	$mainPostId = $jsonObj[0]->data->children[0]->data->id;
 	$mainPostAuthor = $jsonObj[0]->data->children[0]->data->author;
 	//echo "<br>$mainPostId: $mainPostAuthor";
@@ -126,15 +134,49 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
             }
         }
     }
+	/*$asdfasdfasdf1 = array("a" => "b", "c" => "d");
+	echo "<br>size: " . sizeof($asdfasdfasdf1);
+	echo "<br>size-1: " . sizeof(array_keys($intuitiveTagNames));
+	echo "<br>size2: " . sizeof($asdfasdfasdf);
+	echo "<br>size4: " . sizeof($tagCategories);*/
+
+
+
+	// Replace intuitive values in body with non-intuitive (I)
+	foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
+		$body = $mintCommentThatIsNotFromDBButFromTheNet->body;
+		foreach ($intuitiveTagNames as $nonIntuitiveTagName => $intuitiveTagName) {
+			$searchString = "Comment tag: " . $intuitiveTagName;
+			$replaceString = "comment-tag{" . $nonIntuitiveTagName . "}";
+			if (strpos($body, $intuitiveTagName) !== false) {
+				$body = str_replace($searchString, $replaceString, $body);
+			}
+		}
+		$mintCommentThatIsNotFromDBButFromTheNet->body = $body;
+	}
+
+
+	// Replace intuitive values in body with non-intuitive (II)
+	foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
+		$body = $mintCommentThatIsNotFromDBButFromTheNet->body;
+		foreach ($intuitiveTagNames as $nonIntuitiveTagName => $intuitiveTagName) {
+			$searchString = "Ye-Ye Youbeeya: " . $intuitiveTagName;
+			$replaceString = "comment-tag{" . $nonIntuitiveTagName . "}";
+			if (strpos($body, $intuitiveTagName) !== false) {
+				$body = str_replace($searchString, $replaceString, $body);
+			}
+		}
+		$mintCommentThatIsNotFromDBButFromTheNet->body = $body;
+	}
 
     
 
     // Enforce general rule §1:No more than one tag by the same redditor on the same level of the comment tree, i.e. as answer to any given comment.
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
-        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{") !== false) {
-            $redditorInAllThisMess = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            $parentCommentId = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            $myRepliesToParentComment = Array();
+    	if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{") !== false) {
+			$redditorInAllThisMess = $mintCommentThatIsNotFromDBButFromTheNet->author;
+			$parentCommentId = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+			$myRepliesToParentComment = Array();
             foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id2 => $mintCommentThatIsNotFromDBButFromTheNet2) {
                 if ($mintCommentThatIsNotFromDBButFromTheNet2->parent_id == $parentCommentId) {
                     // Here: Found comment on the same level as mine
@@ -1958,4 +2000,3 @@ function die3($a) {
 	$data2['message'] = $a;
 	die(json_encode($data2));
 }
-

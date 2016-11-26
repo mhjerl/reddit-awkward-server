@@ -66,7 +66,7 @@ $result = mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 $count = mysqli_num_rows($result);
 if ($count == 0) {
 	$t = time();
-	$sql = "INSERT INTO prima_germany (latestprimadonnaactivity, latestprimadonnaactivity_utc, source, pageid, pageurl, undersurveillance) VALUES ('$dt2', '$t', 'reddit', '$commentpageid', '$redditCommentPageURL', 'true');";
+	$sql = "INSERT INTO prima_germany (redditor, latestprimadonnaactivity, latestprimadonnaactivity_utc, source, pageid, pageurl, undersurveillance) VALUES ('$redditor', '$dt2', '$t', 'reddit', '$commentpageid', '$redditCommentPageURL', 'true');";
 	mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 }
 

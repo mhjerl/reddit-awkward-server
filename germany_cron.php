@@ -12,10 +12,10 @@ $query = "SELECT * FROM prima_germany WHERE undersurveillance='true';";
 
 $result = mysqli_query($GLOBALS["___mysqli_ston"], $query);
 
-while($row = mysqli_fetch_array($result)){
-  $latestprimadonnaactivity = $row[0];
-  $pageid = $row[3];
-  $pageurl = $row[4];
+while($row = mysqli_fetch_array($result)) {
+  $latestprimadonnaactivity = $row[1];
+  $pageid = $row[4];
+  $pageurl = $row[5];
 //echo "<br>$pageurl<br>";
 
 	$latest = new DateTime($latestprimadonnaactivity);

@@ -93,25 +93,27 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
         ////echo "id: " . $id . "<br><br>";
         ////echo "$mintCommentThatIsNotFromDBButFromTheNet: " . $mintCommentThatIsNotFromDBButFromTheNet . "<br><br>";
 
-
         if (!array_key_exists($id, $previousStoredWayBackIdToCommentBodyArray)) {
             // Here: (The comment loaded directly from the net ISN'T known in the db)
             // Therefore: Insert it
             if ($pageid !== $id) {
+				echo "<br><br>C";
                 // Here: (The comment loaded directly from the net ISN'T known in the db) & (The comment IS a comment and not the main post)
                 // Therefore: Insert it into db
                 $body = $mintCommentThatIsNotFromDBButFromTheNet->body;
+				$body = mysqli_real_escape_string($GLOBALS["___mysqli_ston"], $body);
                 $author = $mintCommentThatIsNotFromDBButFromTheNet->author;
                 $query = "INSERT INTO `redditawkward_com`.`prima_stuttgart` (
 										`author` ,
 										`pageid` ,
 										`commentid` ,
-										`commentbody`
+										`commentbody`,
+										`id`
 										)
 										VALUES (
-										'$author', '$pageid', '$id', '$body' )";
+										'$author', '$pageid', '$id', '$body', NULL )";
                 mysqli_query($GLOBALS["___mysqli_ston"], $query);
-                $somethingHappenedInStuttTown = true; // O, something definitely happened in Stuttgart - a whole new comment - woha!
+                $somethingHappenedInStuttTown = true; // O, something definitely happened in Stuttgart - a whole new comment - woooo!
             }
         } else {
             // Here: The comment loaded directly from the net IS known in the db
@@ -123,6 +125,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
                 // Therefore: Update body
                 //echo "Inspecting this live body (hehe): " . $bodyMint . " old body " . $oldHackyBodyHehehe . "<br><br>";
                 //echo "It changed. <br><br>";
+				$bodyMint = mysqli_real_escape_string($GLOBALS["___mysqli_ston"], $bodyMint);
                 $query = "UPDATE prima_stuttgart SET commentbody='$bodyMint' WHERE pageid='$pageid' AND commentid='$id';";
                 mysqli_query($GLOBALS["___mysqli_ston"], $query);
                 $somethingHappenedInStuttTown = true;  // Odd! Something happened in Stuttgart, someone changed their comment.

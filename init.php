@@ -68,31 +68,46 @@ if ($count == 0) {
 	$t = time();
 	$sql = "INSERT INTO prima_germany (redditor, latestprimadonnaactivity, latestprimadonnaactivity_utc, source, pageid, pageurl, undersurveillance) VALUES ('$redditor', '$dt2', '$t', 'reddit', '$commentpageid', '$redditCommentPageURL', 'true');";
 	mysqli_query($GLOBALS["___mysqli_ston"], $sql);
+
+
+	// Create notification for new user:
+	$dt2=date("Y-m-d H:i:s");
+	$t = time();
+	$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`, `id`) VALUES ('$redditor', NULL, NULL, '$dt2', '$t', 'false', NULL, NULL, 'Welcome!', NULL, NULL, NULL, NULL, NULL);";
+	//echo "<br><br>$sql";
+	mysqli_query($GLOBALS["___mysqli_ston"], $sql);
+
 }
 
 
-// Tell this fella that page is hot!
+// Tell this fella that page is a-hot!
 $query2 = "UPDATE prima_germany SET latestprimadonnaactivity='$dt2', WHERE pageid='$commentpageid'";
 mysqli_query($GLOBALS["___mysqli_ston"], $query2);
 
 
 $query4 = "SELECT * FROM prima_user WHERE redditor='$redditor';";
 $result4 = mysqli_query($GLOBALS["___mysqli_ston"], $query4);
+
+
+
+
+
+/*
+Deprecated:
 $count4 = mysqli_num_rows($result4);
+
+
+
+
 if ($count4 == 0 && $redditor) {
 	$newHash = generateRandomString();
 	$dt2=date("Y-m-d H:i:s");
 	$query5 = "INSERT INTO prima_user VALUES ('$redditor', '$dt2', '0', '$newHash', 'free', NULL, '0', 'neutral', NULL, '', NULL);";
+	mysqli_query($GLOBALS["___mysqli_ston"], $query5);
+}*/
 
 
 
-  // Send admin email: Ny redditor bruger Mortens plugin! Redditor: ___
-
-
-
-
-mysqli_query($GLOBALS["___mysqli_ston"], $query5);
-}
 $row4 = mysqli_fetch_row($result4);
 $dbHash = $row4[3];
 

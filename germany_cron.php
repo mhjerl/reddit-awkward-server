@@ -220,7 +220,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 				$weekday = gmdate("N", $timeUTCTagUsed);
 				
 
-				$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+				$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
 		        $commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;
 		        // Strip text between {}
 		        preg_match('#\{(.*?)\}#', $commentBody, $match);
@@ -230,7 +230,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 		        if (!array_key_exists($shortHandTag, $tagCategories)) {
 		            // Here: Unknown tag
 		            // Therefore: Give penalty
-		            subtractPKarmaConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $wantedSecondPersonWithAlleFieldsInHere->author, $tag, $pageid, $id, $subreddit, $pagename, "You used a self-made tag.", -100);
+		            subtractPKarmaConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $wantedSecondPersonWithAllFieldsInHere->author, $tag, $pageid, $id, $subreddit, $pagename, "You used a self-made tag.", -100);
 		        }
 				else {
 					// Here: Known tag
@@ -297,8 +297,8 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{") !== false) {
 			$redditor = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-			if ($redditor === $wantedSecondPersonWithAlleFieldsInHere) {
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+			if ($redditor === $wantedSecondPersonWithAllFieldsInHere) {
 				// Here: Redditor is responding to himself
 				// Therefore: Give penalty
 				subtractPKarmaConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $mintCommentThatIsNotFromDBButFromTheNet->author, $tag, $pageid, $id, $subreddit, $pagename, "General Rule §5: §5 Nearly all Awkward tags are social in nature. Redditors can't direct any tags towards their own comments.");
@@ -308,13 +308,29 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     }
 
 
+	// Enforce general rule §6: People automatically become *friends* when one addresses another with a comment tag
+    foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
+        if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{i.am.one.of.the.strangest.people.youll.ever.meet}") !== false) {
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+			if ($mintCommentThatIsNotFromDBButFromTheNet->author !== $wantedSecondPersonWithAllFieldsInHere->author) {
+				if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{") !== false) {
+					// Strip text between {}
+                	preg_match('#\{(.*?)\}#', $commentBody, $match);
+                	$shortHandTag = $match[1];
+                	$tag = "comment-tag{" . $shortHandTag . "}";
+					giveRKarmaForUseOfTagConditionally($tag, $mintCommentThatIsNotFromDBButFromTheNet->author, $wantedSecondPersonWithAllFieldsInHere->author, 5, $pageid, $id, $subreddit, $pagename);
+				}
+			}
+		}
+	}
+
 
 
 	// look for "comment-tag{i.am.one.of.the.strangest.people.youll.ever.meet}"
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{i.am.one.of.the.strangest.people.youll.ever.meet}") !== false) {
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-			givePKarmaForUseOfTagConditionally("comment-tag{i.am.one.of.the.strangest.people.youll.ever.meet}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+			givePKarmaForUseOfTagConditionally("comment-tag{i.am.one.of.the.strangest.people.youll.ever.meet}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
 		}
 	}
 
@@ -324,19 +340,19 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{er.hi.what.kind.of.strange.presentation.is.that}") !== false) {
 			$mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-			if ($mintCommentThatIsNotFromDBButFromTheNet->author === $wantedSecondPersonWithAlleFieldsInHere->author) {
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+			if ($mintCommentThatIsNotFromDBButFromTheNet->author === $wantedSecondPersonWithAllFieldsInHere->author) {
 				// Whoops. Redditor can't say this to himself/herself
 				// Give penalty
 				subtractPKarmaConditionally($mTagAgentRedditorName, $mTagAgentRedditorName, "comment-tag{er.hi.what.kind.of.strange.presentation.is.that}", $pageid, $id, $subreddit, $pagename, "Tag should only be used in reply to comment-tag{i.am.one.of.the.strangest.people.youll.ever.meet}", -5);
 			}
 			else {
-				if (strpos($wantedSecondPersonWithAlleFieldsInHere->body, "comment-tag{i.am.one.of.the.strangest.people.youll.ever.meet}") !== false) {
-					givePKarmaForUseOfTagConditionally("comment-tag{er.hi.what.kind.of.strange.presentation.is.that}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+				if (strpos($wantedSecondPersonWithAllFieldsInHere->body, "comment-tag{i.am.one.of.the.strangest.people.youll.ever.meet}") !== false) {
+					givePKarmaForUseOfTagConditionally("comment-tag{er.hi.what.kind.of.strange.presentation.is.that}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
 					
 				}
 				else {
-					subtractPKarmaConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, "comment-tag{er.hi.what.kind.of.strange.presentation.is.that}", $pageid, $idAndRedditorAndMoreDude->id, $subreddit, $pagename, "Tag should only be used in reply to comment-tag{i.am.one.of.the.strangest.people.youll.ever.meet}", -5);
+					subtractPKarmaConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, "comment-tag{er.hi.what.kind.of.strange.presentation.is.that}", $pageid, $idAndRedditorAndMoreDude->id, $subreddit, $pagename, "Tag should only be used in reply to comment-tag{i.am.one.of.the.strangest.people.youll.ever.meet}", -5);
 				}
 			}
 		}
@@ -349,7 +365,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{watch.me.playing.soccer.with.myself.in.this.video}") !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
 			$body = strtolower($mintCommentThatIsNotFromDBButFromTheNet->body);
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
 			if (strpos($body, "youtube") === false) {
 				// Here: No YouTube links in here
 				// Therefore: Give penalty
@@ -357,7 +373,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 			else {
 				// Here: Found YouTube word
 				// Therefore: Give tag use award
-				givePKarmaConditionally("comment-tag{watch.me.playing.soccer.with.myself.in.this.video}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "For playing soccer!", 100);
+				givePKarmaConditionally("comment-tag{watch.me.playing.soccer.with.myself.in.this.video}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "For playing soccer!", 100);
 			}
 		}
 	}
@@ -370,8 +386,8 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{interesting.will.write.more.in.a.few.days.time}") !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-			$idOfSecondPerson = $wantedSecondPersonWithAlleFieldsInHere->id;
+            $wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+			$idOfSecondPerson = $wantedSecondPersonWithAllFieldsInHere->id;
 			$idAndRedditorArrayOfVeryDifferentDirectChildrenWhoCouldBeMe = giveMeTheNamesOfAllApplesOnTheBranchWithThisCommentAsAxePointHmmm($jsonObj, $idOfSecondPerson);
 			$answeredCorrectly = false;
 			foreach($idAndRedditorArrayOfVeryDifferentDirectChildrenWhoCouldBeMe as $idAndRedditorAndMoreDude) {
@@ -390,19 +406,19 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 							// Here: Redditor answered too early
 							// Therefore: Give penalty
 							//echo "<br>c";
-							subtractPKarmaConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, "comment-tag{interesting.will.write.more.in.a.few.days.time}", $pageid, $idAndRedditorAndMoreDude->id, $subreddit, $pagename, "Your answer came within 24 hours. You should have waited a little more.", -5);
+							subtractPKarmaConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, "comment-tag{interesting.will.write.more.in.a.few.days.time}", $pageid, $idAndRedditorAndMoreDude->id, $subreddit, $pagename, "Your answer came within 24 hours. You should have waited a little more.", -5);
                         } else if ($hoursGoneBy > 24 * 4) {
                             // Here: Expired
                             // Therefore: Give penalty
 							//echo "<br>d";
-							subtractPKarmaConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, "comment-tag{interesting.will.write.more.in.a.few.days.time}", $pageid, $idAndRedditorAndMoreDude->id, $subreddit, $pagename, "Your came too late.", -5);
+							subtractPKarmaConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, "comment-tag{interesting.will.write.more.in.a.few.days.time}", $pageid, $idAndRedditorAndMoreDude->id, $subreddit, $pagename, "Your came too late.", -5);
                         }
 						else {
 							// Here: Redditor answered correctly
 							// Therefore: Give Awkward Karma gift
 							//echo "<br>e";
 							$answeredCorrectly = true;
-							givePKarmaConditionally("comment-tag{interesting.will.write.more.in.a.few.days.time}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $idAndRedditorAndMoreDude->id, $subreddit, $pagename, "You answered " . $wantedSecondPersonWithAlleFieldsInHere . " in time after thinking about the answer for appr. " . floor($hoursGoneBy) . " hours.", +50);
+							givePKarmaConditionally("comment-tag{interesting.will.write.more.in.a.few.days.time}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $idAndRedditorAndMoreDude->id, $subreddit, $pagename, "You answered " . $wantedSecondPersonWithAllFieldsInHere . " in time after thinking about the answer for appr. " . floor($hoursGoneBy) . " hours.", +50);
 						}
 					}
 				}
@@ -417,13 +433,13 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 					// Too early
 					// Give penalty
 					//echo "<br>g";
-					subtractPKarmaConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, "comment-tag{interesting.will.write.more.in.a.few.days.time}", $pageid, $id, $subreddit, $pagename, "You said to " . $wantedSecondPersonWithAlleFieldsInHere->author . " you would answer in a few days time, but you answered within 24 hours.", -100);
+					subtractPKarmaConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, "comment-tag{interesting.will.write.more.in.a.few.days.time}", $pageid, $id, $subreddit, $pagename, "You said to " . $wantedSecondPersonWithAllFieldsInHere->author . " you would answer in a few days time, but you answered within 24 hours.", -100);
 				}
 				if ($hoursGoneBy > 24 * 4) {
 					// Expired
 					// Give penalty
 					//echo "<br>g";
-					subtractPKarmaConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, "comment-tag{interesting.will.write.more.in.a.few.days.time}", $pageid, $id, $subreddit, $pagename, "You said to " . $wantedSecondPersonWithAlleFieldsInHere->author . " you would answer in a few days time, but you didn\'t.", -100);
+					subtractPKarmaConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, "comment-tag{interesting.will.write.more.in.a.few.days.time}", $pageid, $id, $subreddit, $pagename, "You said to " . $wantedSecondPersonWithAllFieldsInHere->author . " you would answer in a few days time, but you didn\'t.", -100);
 				}
 			}
 		}
@@ -436,11 +452,11 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{youre.being.overly.ironic.and.are.violating.the.rules}") !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-			if (strpos($wantedSecondPersonWithAlleFieldsInHere->body, "comment-tag{")          ===           false) {
+            $wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+			if (strpos($wantedSecondPersonWithAllFieldsInHere->body, "comment-tag{")          ===           false) {
 				// Here: Disobeyed §1 Must be a reply to a comment with a Reddit Awkward tag in it.
 				// Therefore: Give penalty
-				subtractPKarmaConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $wantedSecondPersonWithAlleFieldsInHere->author, "comment-tag{youre.being.overly.ironic.and.are.violating.the.rules}", $pageid, $id, $subreddit, $pagename, "§1 Must be a reply to a comment with a Reddit Awkward tag in it.", -5);
+				subtractPKarmaConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $wantedSecondPersonWithAllFieldsInHere->author, "comment-tag{youre.being.overly.ironic.and.are.violating.the.rules}", $pageid, $id, $subreddit, $pagename, "§1 Must be a reply to a comment with a Reddit Awkward tag in it.", -5);
 			}
 		}
 	}
@@ -452,7 +468,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}") !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
 			$appleIds = giveMeTheNamesOfAllApplesOnTheBranchWithThisCommentAsAxePointHmmm($jsonObj, $id);
 			//echo "<br>cid: ".$id ;
 			//echo "<br>appleIds size: ". sizeof($appleIds);
@@ -472,7 +488,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 				}
 			}
 			if (!$violatedMyOwnRule) {
-				givePKarmaConditionally("comment-tag{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using this tag.", 10);
+				givePKarmaConditionally("comment-tag{i.consider.this.comment.definitive.and.consider.any.reply.inappropriate}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using this tag.", 10);
 			}
 		}
 	}
@@ -484,8 +500,8 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if ((strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{thanks}") !== false) || (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{explanation.why.i.was.angry}") !== false) || (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{i.was.being.careless}") !== false)) {
 			$commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-			$parentCommentBody = $wantedSecondPersonWithAlleFieldsInHere->body;
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+			$parentCommentBody = $wantedSecondPersonWithAllFieldsInHere->body;
 			if (strpos($parentCommentBody, 'comment-tag{no.problem}')         ===     false or strpos($parentCommentBody, 'comment-tag{dont.mind.its.ok.lets.move.on}')         ===             false or strpos($parentCommentBody, 'comment-tag{its.fine.i.consider.the.case.closed}')           ===          false)
 			{
 				// Here: Tag is not directed towards an overbearing act of kindness
@@ -494,7 +510,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
                 preg_match('#\{(.*?)\}#', $commentBody, $match);
                 $shortHandTag = $match[1];
                 $tag = "comment-tag{" . $shortHandTag . "}";
-				subtractPKarmaConditionally($redditorInAllThisMess, $wantedSecondPersonWithAlleFieldsInHere->author, $tag, $pageid, $id, $subreddit, $pagename, "You misused this tag. It should be directed against 'an overbearing act' i.e. either towards comment-tag{no.problem}, comment-tag{dont.mind.its.ok.lets.move.on} or comment-tag{its.fine.i.consider.the.case.closed}.", -5);
+				subtractPKarmaConditionally($redditorInAllThisMess, $wantedSecondPersonWithAllFieldsInHere->author, $tag, $pageid, $id, $subreddit, $pagename, "You misused this tag. It should be directed against 'an overbearing act' i.e. either towards comment-tag{no.problem}, comment-tag{dont.mind.its.ok.lets.move.on} or comment-tag{its.fine.i.consider.the.case.closed}.", -5);
 			}
 		}
 	}
@@ -504,34 +520,34 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{i.will.not.reply.and.expect.apology}") !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            if (needsToApologize($wantedSecondPersonWithAlleFieldsInHere->author, $mintCommentThatIsNotFromDBButFromTheNet->author)) {
+            $wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            if (needsToApologize($wantedSecondPersonWithAllFieldsInHere->author, $mintCommentThatIsNotFromDBButFromTheNet->author)) {
                 // Here: Rule §2 disobeyed: Conflict already begun in the past.
                 // Therefore: Give penalty to this redditor
-                givePKarmaConditionally("comment-tag{i.will.not.reply.and.expect.apology}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You have been given a penalty for using comment-tag{guarded.apology} more than one time towards the same user before giving him/her a chance to apologize", -300);
+                givePKarmaConditionally("comment-tag{i.will.not.reply.and.expect.apology}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You have been given a penalty for using comment-tag{guarded.apology} more than one time towards the same user before giving him/her a chance to apologize", -300);
             } else {
                 // Here: Redditor didn't use comment-tag{i.will.not.reply.and.expect.apology} towards second person (without getting an apology). (Rule §1)
                 // Therefore: Check if redditor obeys Rule §2
-                if (strpos($wantedSecondPersonWithAlleFieldsInHere->body, "comment-tag{") !== false) {
+                if (strpos($wantedSecondPersonWithAllFieldsInHere->body, "comment-tag{") !== false) {
                     // Here: Redditor is replying to a comment with at least one Awkward Tag, violating Rule §2
                     // Therefore: Give penalty.
-                    givePKarmaConditionally("comment-tag{i.will.not.reply.and.expect.apology}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You have been given a penalty for replying with comment-tag{i.will.not.reply.and.expect.apology} to a comment with at least one Awkward tag. (Rule §1)", -10);
+                    givePKarmaConditionally("comment-tag{i.will.not.reply.and.expect.apology}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You have been given a penalty for replying with comment-tag{i.will.not.reply.and.expect.apology} to a comment with at least one Awkward tag. (Rule §1)", -10);
                 } else {
                     $idOfParentRedditor = $mintCommentThatIsNotFromDBButFromTheNet->parent_id;
                     $culpritName = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$idOfParentRedditor]->author;
 
                     needApology($culpritName, $mTagAgentRedditorName, $subreddit, $pageid, $id);
 
-                    createNotification($pageid, $id, $culpritName, $subreddit, $pagename, "$mTagAgentRedditorName slammed the door at you. You need to apologize using either comment-tag{i.apologize} or comment-tag{guarded.apology}.", "comment-tag{i.will.not.reply.and.expect.apology}", "mustApologizeIfOtherExpectsIt");
+                    createNotification($pageid, $id, $culpritName, $subreddit, $pagename, "$mTagAgentRedditorName won\'t reply and expects an apology from you. You need to apologize using either \'I apologize\' or \'guarded apology\' before you talk to each other again.", "comment-tag{i.will.not.reply.and.expect.apology}", "mustApologizeIfOtherExpectsIt");
                 }
             }
 			$appleIds = giveMeTheNamesOfAllApplesOnTheBranchWithThisCommentAsAxePointHmmm($jsonObj, $id);
             foreach ($appleIds as $appleId) {
                 //echo "<br>appleId: $appleId  author:" . $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$appleId]->author;
-                if ($mTagAgentRedditorName !== $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$appleId]->author && $wantedSecondPersonWithAlleFieldsInHere->author !== $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$appleId]->author) {
+                if ($mTagAgentRedditorName !== $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$appleId]->author && $wantedSecondPersonWithAllFieldsInHere->author !== $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$appleId]->author) {
                     // Here: §5 No third person must answer this comment (Penalty: -10)
                     // Give penalty
-                    subtractPKarmaConditionally($mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$appleId]->author, $wantedSecondPersonWithAlleFieldsInHere->author, "comment-tag{i.will.not.reply.and.expect.apology}", $pageid, $appleId, $subreddit, $pagename, "You should not intrude in a bilateral conflict.", -5);
+                    subtractPKarmaConditionally($mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$appleId]->author, $wantedSecondPersonWithAllFieldsInHere->author, "comment-tag{i.will.not.reply.and.expect.apology}", $pageid, $appleId, $subreddit, $pagename, "You should not intrude in a bilateral conflict.", -5);
                 }
             }
         }
@@ -541,9 +557,9 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{youre.welcome}") !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaConditionally("comment-tag{youre.welcome}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using this tag.", 10);
-            givePKarmaConditionally("comment-tag{youre.welcome}", $wantedSecondPersonWithAlleFieldsInHere->author, $mTagAgentRedditorName, $pageid, $wantedSecondPersonWithAlleFieldsInHere->id, $subreddit, $pagename, "You received Awkward Karma because $mTagAgentRedditorName is polite against you.", 5);
+            $wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaConditionally("comment-tag{youre.welcome}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using this tag.", 10);
+            givePKarmaConditionally("comment-tag{youre.welcome}", $wantedSecondPersonWithAllFieldsInHere->author, $mTagAgentRedditorName, $pageid, $wantedSecondPersonWithAllFieldsInHere->id, $subreddit, $pagename, "You received Awkward Karma because $mTagAgentRedditorName is polite against you.", 5);
         }
     }
 
@@ -551,9 +567,9 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{thanks}") !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaConditionally("comment-tag{thanks}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using this tag.", 10);
-            givePKarmaConditionally("comment-tag{thanks}", $wantedSecondPersonWithAlleFieldsInHere->author, $mTagAgentRedditorName, $pageid, $wantedSecondPersonWithAlleFieldsInHere->id, $subreddit, $pagename, "You received Awkward Karma because $mTagAgentRedditorName is thankful towards you.", 5);
+            $wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaConditionally("comment-tag{thanks}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using this tag.", 10);
+            givePKarmaConditionally("comment-tag{thanks}", $wantedSecondPersonWithAllFieldsInHere->author, $mTagAgentRedditorName, $pageid, $wantedSecondPersonWithAllFieldsInHere->id, $subreddit, $pagename, "You received Awkward Karma because $mTagAgentRedditorName is thankful towards you.", 5);
         }
     }
 
@@ -562,9 +578,9 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{i.am.glad.you.said.that.to.me}") !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaConditionally("comment-tag{i.am.glad.you.said.that.to.me}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using this tag.", 10);
-            givePKarmaConditionally("comment-tag{i.am.glad.you.said.that.to.me}", $wantedSecondPersonWithAlleFieldsInHere->author, $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "You received Awkward Karma because $mTagAgentRedditorName was glad of the inspiration you gave him/her!", 5);
+            $wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaConditionally("comment-tag{i.am.glad.you.said.that.to.me}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using this tag.", 10);
+            givePKarmaConditionally("comment-tag{i.am.glad.you.said.that.to.me}", $wantedSecondPersonWithAllFieldsInHere->author, $mTagAgentRedditorName, $pageid, $id, $subreddit, $pagename, "You received Awkward Karma because $mTagAgentRedditorName was glad of the inspiration you gave him/her!", 5);
         }
     }
 
@@ -573,28 +589,28 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{awkward}') !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaConditionally("comment-tag{awkward}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using this tag.", 10);
-            if (strpos($wantedSecondPersonWithAlleFieldsInHere->body, 'comment-tag{') !== false) {
+            $wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaConditionally("comment-tag{awkward}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename, "You have received Awkward Karma for using this tag.", 10);
+            if (strpos($wantedSecondPersonWithAllFieldsInHere->body, 'comment-tag{') !== false) {
                 // Here: Second person's comment has ra tag. = violation!
                 // Therefore: Give penalty
                 $motivation = "You have received a penalty of -5 for using comment-tag{awkward} against another Reddit Awkward tag.";
-                subtractPKarmaForPlainAwkwardTagViolationConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename, $motivation, -5);
+                subtractPKarmaForPlainAwkwardTagViolationConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename, $motivation, -5);
             } else {
                 if (!hasMoreWordsBesidesTheTagItselfDude($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{awkward}")) {
                     // Here: tag is stand-alone the way it sholdn't be
                     // Therefore: Give penalty!
                     $motivation = "You have received a penalty of -5 for using comment-tag{awkward} as stand-alone tag, which it isn't.";
-                    subtractPKarmaForPlainAwkwardTagViolationConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename, $motivation, -5);
+                    subtractPKarmaForPlainAwkwardTagViolationConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename, $motivation, -5);
                 } else {
                     if (getWordCountBesidesTheTagItselfDude($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{awkward}") < 20) {
                         // Here: Less than 20 words
                         $motivation = "comment-tag{awkward} tag violation: §3 Must be precluded by a text with no less than 20 words.";
-                        subtractPKarmaForPlainAwkwardTagViolationConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename, $motivation, -5);
+                        subtractPKarmaForPlainAwkwardTagViolationConditionally($mintCommentThatIsNotFromDBButFromTheNet->author, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename, $motivation, -5);
                     } else {
                         // Here: No RA tag in second person's comment
                         // Therefore: Everything is ok.
-                        givePKarmaForUseOfTagConditionally("comment-tag{awkward}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+                        givePKarmaForUseOfTagConditionally("comment-tag{awkward}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
                     }
                 }
             }
@@ -607,8 +623,8 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{waits.for.anyone}') !== false) {
             $cursoryRedditorWaiting = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaForUseOfTagConditionally("comment-tag{waits.for.anyone}", $cursoryRedditorWaiting, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{waits.for.anyone}", $cursoryRedditorWaiting, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
 
             // Here: $mintCommentThatIsNotFromDBButFromTheNet->body has comment-tag{waits.for.anyone] tag
             //echo "Found comment with comment-tag{waits.for.anyone]: " . $id . "<br><br>";
@@ -685,13 +701,13 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{waits.for.your.reply.only}') !== false) {
             $cursoryRedditorWaiting = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaForUseOfTagConditionally("comment-tag{waits.for.your.reply.only}", $cursoryRedditorWaiting, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{waits.for.your.reply.only}", $cursoryRedditorWaiting, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
 
             // Here: $mintCommentThatIsNotFromDBButFromTheNet->body has comment-tag{waits.for.your.reply.only]-tag
             //echo "<br><br>Found comment with comment-tag{waits.for.your.reply.only]: " . $id . "<br><br>";
-            $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            $wantedAnswerersRedditorName = $wantedSecondPersonWithAlleFieldsInHere->author;
+            $wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            $wantedAnswerersRedditorName = $wantedSecondPersonWithAllFieldsInHere->author;
             //echo "<br><br>wantedAnswerersRedditorName: $wantedAnswerersRedditorName";
             $query = "SELECT * FROM prima_tagc_status WHERE commentpageid='$pageid' AND commentidexpectingdirectanswerfromspecificredditor='$id'";
             $result3 = mysqli_query($GLOBALS["___mysqli_ston"], $query);
@@ -766,8 +782,8 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{i.find.the.subject.unworthy.for.discussion}') !== false) {
 
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaForUseOfTagConditionally("comment-tag{i.find.the.subject.unworthy.for.discussion}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{i.find.the.subject.unworthy.for.discussion}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
 
             $agentsCommentsParentId = $mintCommentThatIsNotFromDBButFromTheNet->parent_id;
             //echo "<br><br>agentsCommentsParentId: $agentsCommentsParentId";
@@ -802,8 +818,8 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{i.find.this.unworthy.for.discussion}') !== false) {
 
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaForUseOfTagConditionally("comment-tag{i.find.this.unworthy.for.discussion}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{i.find.this.unworthy.for.discussion}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
 
             $agentsCommentsParentId = $mintCommentThatIsNotFromDBButFromTheNet->parent_id;
             //echo "<br><br>agentsCommentsParentId: $agentsCommentsParentId";
@@ -838,8 +854,8 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
         if ((strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{i.apologize}') !== false) or (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{guarded.apology}') !== false)) {
 			
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaForUseOfTagConditionally("comment-tag{i.apologize}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{i.apologize}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
 
 			$commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;
 			preg_match('#\{(.*?)\}#', $commentBody, $match);
@@ -863,8 +879,8 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if ((strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{no.problem}') !== false) || (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{dont.mind.its.ok.lets.move.on}') !== false) || (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{its.fine.i.consider.the.case.closed}') !== false)) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaForUseOfTagConditionally("comment-tag{no.problem}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{no.problem}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
 
             $idOfParentRedditor = $mintCommentThatIsNotFromDBButFromTheNet->parent_id;
 			$commentBody = $mintCommentThatIsNotFromDBButFromTheNet->body;
@@ -892,8 +908,8 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{your.link.inspired.me}') !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaForUseOfTagConditionally("comment-tag{your.link.inspired.me}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{your.link.inspired.me}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
         }
     }
 
@@ -901,8 +917,8 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{your.post.inspired.me}') !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaForUseOfTagConditionally("comment-tag{your.post.inspired.me}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{your.post.inspired.me}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
         }
     }
 
@@ -910,13 +926,13 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{your.comment.inspired.me}') !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaForUseOfTagConditionally("comment-tag{your.comment.inspired.me}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
-            $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            if (getWordCountBesidesTheTagItselfDude($wantedSecondPersonWithAlleFieldsInHere->body, "comment-tag{your.comment.inspired.me}") < 20) {
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{your.comment.inspired.me}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+            $wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            if (getWordCountBesidesTheTagItselfDude($wantedSecondPersonWithAllFieldsInHere->body, "comment-tag{your.comment.inspired.me}") < 20) {
                 // Here: Word count of second persons comment is less than 20 words
                 // Therefore: Give penalty to first person
-                subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere, "comment-tag{your.comment.inspired.me}", $pageid, $id, $subreddit, $pagename);
+                subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere, "comment-tag{your.comment.inspired.me}", $pageid, $id, $subreddit, $pagename);
             }
         }
     }
@@ -925,8 +941,8 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{i.dont.think.the.original.post.has.been.addressed.yet}') !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaForUseOfTagConditionally("comment-tag{i.dont.think.the.original.post.has.been.addressed.yet}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{i.dont.think.the.original.post.has.been.addressed.yet}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
             if ($mainPostId !== $mintCommentThatIsNotFromDBButFromTheNet->parent_id) {
                 subtractPKarmaForIDontThinkTheOriginalBlaBlaBlaConditionally($mTagAgentRedditorName, $mainPostAuthor, "comment-tag{i.dont.think.the.original.post.has.been.addressed.yet}", $pageid, $id, $subreddit, $pagename);
             }
@@ -937,8 +953,8 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{i.dont.think.the.original.post.has.been.taken.seriously.yet}') !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaForUseOfTagConditionally("comment-tag{i.dont.think.the.original.post.has.been.taken.seriously.yet}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{i.dont.think.the.original.post.has.been.taken.seriously.yet}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
             if ($mainPostId !== $mintCommentThatIsNotFromDBButFromTheNet->parent_id) {
                 subtractPKarmaForIDontThinkTheOriginalBlaBlaBlaConditionally($mTagAgentRedditorName, $mainPostAuthor, "comment-tag{i.dont.think.the.original.post.has.been.taken.seriously.yet}", $pageid, $id, $subreddit, $pagename);
             }
@@ -950,8 +966,8 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{i.dont.think.the.original.post.has.been.treated.respectfully}') !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-			$wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaForUseOfTagConditionally("comment-tag{i.dont.think.the.original.post.has.been.treated.respectfully}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{i.dont.think.the.original.post.has.been.treated.respectfully}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
             if ($mainPostId !== $mintCommentThatIsNotFromDBButFromTheNet->parent_id) {
                 subtractPKarmaForIDontThinkTheOriginalBlaBlaBlaConditionally($mTagAgentRedditorName, $mainPostAuthor, "comment-tag{i.dont.think.the.original.post.has.been.treated.respectfully}", $pageid, $id, $subreddit, $pagename);
             }
@@ -961,15 +977,15 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     // check if redditors who are in conflict talk to each (on this particular page, known to the system) other without the wrongdoer having apologized first
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-        $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-        if (needsToApologize($mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author)) {
+        $wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+        if (needsToApologize($mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author)) {
             // Here: first person needs to apologize to second person
             // Therefore: Create notification for first person about this situation
-            createNeedToApologizeBeforeChattingNotificationForBothFirstAndSecondPerson($pageid, $id, $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $subreddit, $pagename);
-        } else if (needsToApologize($wantedSecondPersonWithAlleFieldsInHere->author, $mTagAgentRedditorName)) {
+            createNeedToApologizeBeforeChattingNotificationForBothFirstAndSecondPerson($pageid, $id, $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $subreddit, $pagename);
+        } else if (needsToApologize($wantedSecondPersonWithAllFieldsInHere->author, $mTagAgentRedditorName)) {
             // Here: second person needs to apologize to first person
             // Therefore: Create notification for second person about this situation
-            createNeedToApologizeBeforeChattingNotificationForBothFirstAndSecondPerson($pageid, $id, $wantedSecondPersonWithAlleFieldsInHere->author, $mTagAgentRedditorName, $subreddit, $pagename);
+            createNeedToApologizeBeforeChattingNotificationForBothFirstAndSecondPerson($pageid, $id, $wantedSecondPersonWithAllFieldsInHere->author, $mTagAgentRedditorName, $subreddit, $pagename);
         }
     }
 
@@ -977,8 +993,8 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
         if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, 'comment-tag{that.pissed.me.off.but.please.dont.mind}') !== false) {
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
-            $wantedSecondPersonWithAlleFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
-            givePKarmaForUseOfTagConditionally("comment-tag{that.pissed.me.off.but.please.dont.mind}", $mTagAgentRedditorName, $wantedSecondPersonWithAlleFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
+            $wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
+            givePKarmaForUseOfTagConditionally("comment-tag{that.pissed.me.off.but.please.dont.mind}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
         }
     }
 }
@@ -1243,7 +1259,7 @@ function createNotification($pageid, $cid, $redditor, $subreddit, $pagename, $no
 	else {
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$redditor', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, NULL, '$notificationMessage', '$tag', '$rule', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`, `id`) VALUES ('$redditor', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, NULL, '$notificationMessage', '$tag', '$rule', '$subreddit', '$pagename', NULL);";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1260,10 +1276,10 @@ function createNeedToApologizeBeforeChattingNotificationForBothFirstAndSecondPer
 		$notification = "Redditor $needsToApologizeRedditorName needs to apologize with comment-tag{i.apologize} $angryPersonRedditorName or comment-tag{guarded.apology} for this incidence: http://  before they should engage in direct conversation! No relational karma or Awkward Karma has been subtracted from either of you. Thanks.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$needsToApologizeRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, NULL, '$notification', 'comment-tag{i.apologize}' 'commentatorExpectsAnswerFrom', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`, `id`) VALUES ('$needsToApologizeRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, NULL, '$notification', 'comment-tag{i.apologize}' 'commentatorExpectsAnswerFrom', '$subreddit', '$pagename', NULL);";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
-		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$angryPersonRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, NULL, '$notification', 'comment-tag{i.apologize}' 'shouldApologizeBeforeChatting', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`, `id`) VALUES ('$angryPersonRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, NULL, '$notification', 'comment-tag{i.apologize}' 'shouldApologizeBeforeChatting', '$subreddit', '$pagename', NULL);";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
@@ -1609,7 +1625,7 @@ function createCTagNotificationForSecondPerson($pageid, $cid, $wantedAnswerersRe
 		$notification = "The redditor $cursoryRedditorWaiting awaits a direct answer from you. Please click the link to see his or her comment.";
 		$dt2=date("Y-m-d H:i:s");
 		$t = time();
-		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`) VALUES ('$wantedAnswerersRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, NULL, '$notification', 'comment-tag{waits.for.your.reply.only}', 'commentatorExpectsAnswerFrom', '$subreddit', '$pagename');";
+		$sql = "INSERT INTO `redditawkward_com`.`prima_notification` (`redditor`, `pageid`, `commentid`, `whenf`, `utc`, `claimed`, `claimedwhen`, `claimedwhen_utc`, `motivation`, `tag`, `rule`, `subreddit`, `pagename`, `id`) VALUES ('$wantedAnswerersRedditorName', '$pageid', '$cid', '$dt2', '$t', 'false', NULL, NULL, '$notification', 'comment-tag{waits.for.your.reply.only}', 'commentatorExpectsAnswerFrom', '$subreddit', '$pagename', NULL);";
 		//echo "<br><br>$sql";
 		mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}

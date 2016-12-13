@@ -112,8 +112,6 @@ $row4 = mysqli_fetch_row($result4);
 $dbHash = $row4[3];
 
 if ($dbHash !== $hash) {
-
-
 die("access denied for user " . $redditor);
 }
 
@@ -132,6 +130,44 @@ if ($count > 0) {
 }
 
 
+
+
+
+
+
+
+
+
+
+$sql = "SELECT cert_id, status, commentid FROM prima_certificate WHERE subreddit='$subreddit' AND pageid='$commentpageid';";
+$result = mysqli_query($GLOBALS["___mysqli_ston"], $sql);
+$certificatesArray = Array();
+$c = 0;
+while($row = mysqli_fetch_array($result)) {
+  $certificatesArray[$c] = new stdClass();
+  $certificatesArray[$c]->cert_id = $row[0];
+  $certificatesArray[$c]->status = $row[1];
+  $certificatesArray[$c]->commentid = $row[2];
+  $c++;
+}
+
+$data = json_encode($certificatesArray);
+
+$jsonConglomerateEr['certificates'] = $data;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 $query = "SELECT DISTINCT author
 FROM prima_stuttgart s, prima_user u
 WHERE s.author = u.redditor AND s.pageid = '$commentpageid' AND u.redditor != '$redditor'";
@@ -144,6 +180,7 @@ $memberArrayTemp = Array();
 $c = 0;
 while($row = mysqli_fetch_array($result)){
   $memberArrayTemp[$c] = $row[0];
+  //echo "<br><br>--->" . $memberArrayTemp[$c];
   $c++;
 }
 
@@ -159,8 +196,7 @@ for ($c = 0; $c < sizeof($memberArrayTemp); $c++) {
 	$memberArray[$c]->member = $otherRedditor;
 	$memberArray[$c]->imagetype = $imageType;
 	$memberArray[$c]->imagecustom = $imageCustom;
-	//echo $otherRedditor . " " . $imageType . " " . $imageCustom;
-	
+	//echo "<br><br>" . $otherRedditor . " " . $imageType . " " . $imageCustom;
 }
 
 $data = json_encode($memberArray);
@@ -331,9 +367,13 @@ $jsonConglomerateEr['totalRKarma'] = $totalRKarma;
 $jsonConglomerateEr['imagetype'] = $imagetype;
 $jsonConglomerateEr['imagecustom'] = $imagecustom;
 
+/*
+Deprecated
+(Generated client-side)
 
-
-
+$certificateId = "CTC-" . generateRandomNumberString(3) . "-" . generateRandomNumberString(4) . "-" . generateRandomNumberString(3);
+$jsonConglomerateEr['certificateId'] = $certificateId;
+*/
 
 
 
@@ -1034,6 +1074,10 @@ function needsToApologize($hypotheticallyApologizerRedditor, $hypotheticallyAndH
 
 function generateRandomString($length = 4) {
     return substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $length);
+}
+
+function generateRandomNumberString($length = 4) {
+    return substr(str_shuffle("0123456789"), 0, $length);
 }
 
 function die3($a) {

@@ -145,7 +145,7 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 
 
 
-	// Replace intuitive values in body with non-intuitive (I)
+	/* // Replace intuitive values in body with non-intuitive (I)
 	foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
 		$body = $mintCommentThatIsNotFromDBButFromTheNet->body;
 		foreach ($intuitiveTagNames as $nonIntuitiveTagName => $intuitiveTagName) {
@@ -156,14 +156,15 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 			}
 		}
 		$mintCommentThatIsNotFromDBButFromTheNet->body = $body;
-	}
+	}*/
 
 
-	// Replace intuitive values in body with non-intuitive (II)
+
+	// Replace intuitive values in body with non-intuitive (I)
 	foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
 		$body = $mintCommentThatIsNotFromDBButFromTheNet->body;
 		foreach ($intuitiveTagNames as $nonIntuitiveTagName => $intuitiveTagName) {
-			$searchString = "Ye-Ye Youbeeya: " . $intuitiveTagName;
+			$searchString = "Comment Tag: " . $intuitiveTagName;
 			$replaceString = "comment-tag{" . $nonIntuitiveTagName . "}";
 			if (strpos($body, $intuitiveTagName) !== false) {
 				$body = str_replace($searchString, $replaceString, $body);
@@ -172,8 +173,30 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
 		$mintCommentThatIsNotFromDBButFromTheNet->body = $body;
 	}
 
-    
-
+    // Look for certificates and insert them
+	foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
+		$redditorInAllThisMess = $mintCommentThatIsNotFromDBButFromTheNet->author;
+		$body = $mintCommentThatIsNotFromDBButFromTheNet->body;
+		$searchString = "Unique Certificate Id: CTC-";
+		if (strpos($body, $searchString) !== false) {
+			// Here: Found certificate
+			// Therefore: Find certificate id and insert it
+			$pos = strpos($body, "CTC-");
+			$cert_id = substr($body, $pos, 16);
+			$sql = "SELECT * FROM prima_certificate WHERE cert_id='$cert_id';";
+			$result = mysqli_query($GLOBALS["___mysqli_ston"], $sql);
+			$count = mysqli_num_rows($result);
+			//echo "hej";
+			if ($count == 0) {
+				$dt2=date("Y-m-d H:i:s");
+				$t = time();
+				$sql = "INSERT INTO `redditawkward_com`.`prima_certificate` (`cert_id`, `redditor`, `status`, `acquired_by`, `subreddit`, `pageid`, `commentid`, `detected_date`, `detected_utc`, `acquired_date`, `acquired_utc`) VALUES ('$cert_id', '$redditorInAllThisMess', 'FOR_SALE', NULL, '$subreddit', '$pageid', '$id', '$dt2', '$t', NULL, NULL);";
+				mysqli_query($GLOBALS["___mysqli_ston"], $sql);
+			}
+		}
+		$mintCommentThatIsNotFromDBButFromTheNet->body = $body;
+	}
+	
     // Enforce general rule §1:No more than one tag by the same redditor on the same level of the comment tree, i.e. as answer to any given comment.
     foreach ($mintArrayOfIdsToBodiesAndAuthorsAndParentIds as $id => $mintCommentThatIsNotFromDBButFromTheNet) {
     	if (strpos($mintCommentThatIsNotFromDBButFromTheNet->body, "comment-tag{") !== false) {

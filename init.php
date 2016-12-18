@@ -26,7 +26,6 @@ $dt2=date("Y-m-d H:i:s");
 $redditor = $_GET['redditor'];
 $commentpageid = $_GET['commentpageid'];
 $pagename = $_GET['pagename'];
-$hash = $_GET['hash'];
 $subreddit = $_GET['subreddit'];
 $visitortimezone = $_GET['visitortimezone'];
 
@@ -87,33 +86,14 @@ mysqli_query($GLOBALS["___mysqli_ston"], $query2);
 
 $query4 = "SELECT * FROM prima_user WHERE redditor='$redditor';";
 $result4 = mysqli_query($GLOBALS["___mysqli_ston"], $query4);
-
-
-
-
-
-/*
-Deprecated:
 $count4 = mysqli_num_rows($result4);
-
-
-
-
 if ($count4 == 0 && $redditor) {
 	$newHash = generateRandomString();
 	$dt2=date("Y-m-d H:i:s");
 	$query5 = "INSERT INTO prima_user VALUES ('$redditor', '$dt2', '0', '$newHash', 'free', NULL, '0', 'neutral', NULL, '', NULL);";
 	mysqli_query($GLOBALS["___mysqli_ston"], $query5);
-}*/
-
-
-
-$row4 = mysqli_fetch_row($result4);
-$dbHash = $row4[3];
-
-if ($dbHash !== $hash) {
-die("access denied for user " . $redditor);
 }
+
 
 
 $query4 = "UPDATE prima_user SET timezone='$visitortimezone' WHERE redditor='$redditor';";

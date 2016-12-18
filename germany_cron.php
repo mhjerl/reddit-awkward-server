@@ -951,11 +951,10 @@ function putStuttgartUnderSurveillanceAndLookForChangesAndOddBehaviourHere($page
             $mTagAgentRedditorName = $mintCommentThatIsNotFromDBButFromTheNet->author;
 			$wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
             givePKarmaForUseOfTagConditionally("comment-tag{your.comment.inspired.me}", $mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, $pageid, $id, $subreddit, $pagename);
-            $wantedSecondPersonWithAllFieldsInHere = $mintArrayOfIdsToBodiesAndAuthorsAndParentIds[$mintCommentThatIsNotFromDBButFromTheNet->parent_id];
             if (getWordCountBesidesTheTagItselfDude($wantedSecondPersonWithAllFieldsInHere->body, "comment-tag{your.comment.inspired.me}") < 20) {
                 // Here: Word count of second persons comment is less than 20 words
                 // Therefore: Give penalty to first person
-                subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere, "comment-tag{your.comment.inspired.me}", $pageid, $id, $subreddit, $pagename);
+                subtractPKarmaForTagInspiredNotBeingUsedAsAnswerToMainPostConditionally($mTagAgentRedditorName, $wantedSecondPersonWithAllFieldsInHere->author, "comment-tag{your.comment.inspired.me}", $pageid, $id, $subreddit, $pagename);
             }
         }
     }
@@ -1323,7 +1322,6 @@ function giveRKarmaForUseOfTagConditionally($tag, $redditorFirstPerson, $reddito
 $sql = "INSERT INTO  `redditawkward_com`.`prima_relation (`firstperson`, `secondperson`, `whencreated`, `whencreated_utc`, `secondperson_notified`, `whensecondpersonnotified`, `whensecondpersonnotified_utc`, `rkarmaforboth`, `firstperson_commentid`, `firstperson_pageid`, `subreddit`, `motivation`, `tag`) VALUES ('$redditorFirstPerson',  '$redditorSecondPerson',  '$dt2',  '$t',  'false',  NULL,  '0',  '$rKarma',  '$cid',  '$pid',  '$subreddit',  '$motivation' , '$tag');";
 		 mysqli_query($GLOBALS["___mysqli_ston"], $sql);
 	}
-
 }
 
 
